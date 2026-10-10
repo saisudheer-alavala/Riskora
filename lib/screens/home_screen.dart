@@ -257,21 +257,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 38,
-                      height: 38,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: AppTheme.redPointsGradient,
+                        borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.purpleElectric.withOpacity(0.5),
+                            color: const Color(0xFF00E5FF).withOpacity(0.35),
                             blurRadius: 14,
                             spreadRadius: 1,
                           ),
                         ],
                       ),
-                      child: const Center(
-                        child: Icon(Icons.shield_rounded, color: Colors.white, size: 20),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.asset(
+                          'assets/images/riskora_emblem.png',
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -1295,13 +1298,25 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 children: [
                   Container(
-                    width: 28,
-                    height: 28,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: AppTheme.redPointsGradient,
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF00E5FF).withOpacity(0.35),
+                          blurRadius: 10,
+                          spreadRadius: 1,
+                        ),
+                      ],
                     ),
-                    child: const Icon(Icons.shield_rounded, color: Colors.white, size: 16),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(
+                        'assets/images/riskora_emblem.png',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Text(

@@ -141,8 +141,8 @@ class _AuthScreenState extends State<AuthScreen> {
                 ? const ColorScheme.dark(
                     primary: AppTheme.purpleElectric,
                     onPrimary: Colors.white,
-                    surface: AppTheme.surfaceElevated,
-                    onSurface: AppTheme.textPrimary,
+                    surface: AppTheme.darkSurfaceElevated,
+                    onSurface: AppTheme.darkTextPrimary,
                   )
                 : const ColorScheme.light(
                     primary: AppTheme.purpleElectric,
@@ -420,21 +420,24 @@ class _AuthScreenState extends State<AuthScreen> {
           child: Column(
             children: [
               Container(
-                width: 58,
-                height: 58,
+                width: 68,
+                height: 68,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: AppTheme.redPointsGradient,
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.purpleElectric.withOpacity(0.55),
-                      blurRadius: 20,
+                      color: const Color(0xFF00E5FF).withOpacity(0.4),
+                      blurRadius: 22,
                       spreadRadius: 2,
                     ),
                   ],
                 ),
-                child: const Center(
-                  child: Icon(Icons.shield_rounded, color: Colors.white, size: 30),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset(
+                    'assets/images/riskora_emblem.png',
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
               const SizedBox(height: 14),

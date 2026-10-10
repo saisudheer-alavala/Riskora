@@ -75,11 +75,11 @@ class _SocialMonitoringScreenState extends State<SocialMonitoringScreen> {
                 child: Column(
                   children: [
                     _buildModalMetricRow('Name Similarity', '${threat.nameSimilarity.toStringAsFixed(1)}%'),
-                    const Divider(height: 14, color: AppTheme.borderSubtle),
+                    Divider(height: 14, color: AppTheme.borderSubtle),
                     _buildModalMetricRow('Logo Visual Similarity', '${threat.logoSimilarity.toStringAsFixed(1)}%'),
-                    const Divider(height: 14, color: AppTheme.borderSubtle),
+                    Divider(height: 14, color: AppTheme.borderSubtle),
                     _buildModalMetricRow('Suspicious Flag Confidence', '${threat.breakdown.suspiciousKeywordsScore.toStringAsFixed(0)}%'),
-                    const Divider(height: 14, color: AppTheme.borderSubtle),
+                    Divider(height: 14, color: AppTheme.borderSubtle),
                     _buildModalMetricRow('Account Age Score', '${threat.breakdown.domainOrAccountAgeScore.toStringAsFixed(0)} / 100'),
                   ],
                 ),
@@ -245,7 +245,7 @@ class _SocialMonitoringScreenState extends State<SocialMonitoringScreen> {
                           style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 13),
                           decoration: InputDecoration(
                             hintText: 'Search by handle, profile name, or threat keyword...',
-                            prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppTheme.textMuted),
+                            prefixIcon: Icon(Icons.search_rounded, size: 20, color: AppTheme.textMuted),
                             suffixIcon: _searchQuery.isNotEmpty
                                 ? IconButton(
                                     icon: const Icon(Icons.clear_rounded, size: 18),

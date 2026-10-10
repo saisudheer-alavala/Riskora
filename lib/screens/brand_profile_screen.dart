@@ -339,7 +339,13 @@ class _BrandProfileScreenState extends State<BrandProfileScreen> {
                             : null,
                       ),
                       child: _logoController.text.isEmpty
-                          ? const Icon(Icons.shield_rounded, color: AppTheme.primaryTeal, size: 32)
+                          ? Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.asset(
+                                'assets/images/riskora_emblem.png',
+                                fit: BoxFit.contain,
+                              ),
+                            )
                           : null,
                     ),
                     const SizedBox(width: 18),

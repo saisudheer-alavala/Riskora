@@ -95,8 +95,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
             onPressed: () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Executive PDF downloaded to local storage.'),
+                SnackBar(
+                  content: const Text('Executive PDF downloaded to local storage.'),
                   backgroundColor: AppTheme.surfaceHigh,
                 ),
               );

@@ -3,13 +3,16 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // --- DARK THEME TOKENS (Calibrated Deep Obsidian Stealth - No Glare) ---
-  static const Color background = Color(0xFF0D0C15); // Deep stealth canvas
-  static const Color backgroundCanvas = Color(0xFF12111D); // Secondary canvas
-  static const Color surface = Color(0xFF181726); // Deep card surface (toned down from glare)
-  static const Color surfaceElevated = Color(0xFF212030); // Elevated surface
-  static const Color surfaceHigh = Color(0xFF2A283C); // Modals & popup sheets
-  static const Color border = Color(0xFF2C2A3E); // Crisp subtle border
-  static const Color borderSubtle = Color(0xFF201F2F); // Divider lines
+  static const Color darkBackground = Color(0xFF0D0C15); // Deep stealth canvas
+  static const Color darkBackgroundCanvas = Color(0xFF12111D); // Secondary canvas
+  static const Color darkSurface = Color(0xFF181726); // Deep card surface (toned down from glare)
+  static const Color darkSurfaceElevated = Color(0xFF212030); // Elevated surface
+  static const Color darkSurfaceHigh = Color(0xFF2A283C); // Modals & popup sheets
+  static const Color darkBorder = Color(0xFF2C2A3E); // Crisp subtle border
+  static const Color darkBorderSubtle = Color(0xFF201F2F); // Divider lines
+  static const Color darkTextPrimary = Color(0xFFF3F4F6); // Soft bright text
+  static const Color darkTextSecondary = Color(0xFF9CA3AF); // Muted secondary
+  static const Color darkTextMuted = Color(0xFF6B7280); // Subtle captions
 
   // --- LIGHT THEME TOKENS (Clean Enterprise Precision) ---
   static const Color lightBackground = Color(0xFFF4F6FB); // Soft enterprise canvas
@@ -19,6 +22,24 @@ class AppTheme {
   static const Color lightSurfaceHigh = Color(0xFFE5ECF6);
   static const Color lightBorder = Color(0xFFDCE3EF);
   static const Color lightBorderSubtle = Color(0xFFE9EFF7);
+  static const Color lightTextPrimary = Color(0xFF0F172A); // Deep slate navy
+  static const Color lightTextSecondary = Color(0xFF475569);
+  static const Color lightTextMuted = Color(0xFF94A3B8);
+
+  // Active theme flag (synchronized with AppStateProvider)
+  static bool currentIsDark = true;
+
+  // Dynamic getters that adapt automatically based on the active theme
+  static Color get background => currentIsDark ? darkBackground : lightBackground;
+  static Color get backgroundCanvas => currentIsDark ? darkBackgroundCanvas : lightBackgroundCanvas;
+  static Color get surface => currentIsDark ? darkSurface : lightSurface;
+  static Color get surfaceElevated => currentIsDark ? darkSurfaceElevated : lightSurfaceElevated;
+  static Color get surfaceHigh => currentIsDark ? darkSurfaceHigh : lightSurfaceHigh;
+  static Color get border => currentIsDark ? darkBorder : lightBorder;
+  static Color get borderSubtle => currentIsDark ? darkBorderSubtle : lightBorderSubtle;
+  static Color get textPrimary => currentIsDark ? darkTextPrimary : lightTextPrimary;
+  static Color get textSecondary => currentIsDark ? darkTextSecondary : lightTextSecondary;
+  static Color get textMuted => currentIsDark ? darkTextMuted : lightTextMuted;
 
   // --- SIGNATURE ACCENTS & GRADIENTS (Red Points Electric Palette) ---
   static const Color purpleElectric = Color(0xFF5D2EE6); // Red Points Electric Indigo
@@ -41,16 +62,6 @@ class AppTheme {
   static const Color riskLow = Color(0xFF818CF8); // Slate Indigo (No Green)
   static const Color riskInfo = Color(0xFF7E47FF); // Purple
 
-  // Text Colors (Dark Mode: Soft Off-White to eliminate screen glare)
-  static const Color textPrimary = Color(0xFFF3F4F6); // Soft bright text
-  static const Color textSecondary = Color(0xFF9CA3AF); // Muted secondary
-  static const Color textMuted = Color(0xFF6B7280); // Subtle captions
-
-  // Text Colors (Light Mode)
-  static const Color lightTextPrimary = Color(0xFF0F172A); // Deep slate navy
-  static const Color lightTextSecondary = Color(0xFF475569);
-  static const Color lightTextMuted = Color(0xFF94A3B8);
-
   // Signature Gradients
   static const LinearGradient redPointsGradient = LinearGradient(
     colors: [Color(0xFF5D2EE6), Color(0xFF783291), Color(0xFFFF9B63)],
@@ -65,13 +76,15 @@ class AppTheme {
   );
 
   // Softened Ambient Shadows (Eliminating harsh glow glare)
-  static List<BoxShadow> get cardShadow => [
+  static List<BoxShadow> get darkCardShadow => [
         BoxShadow(
           color: Colors.black.withOpacity(0.35),
           blurRadius: 14,
           offset: const Offset(0, 4),
         ),
       ];
+
+  static List<BoxShadow> get cardShadow => currentIsDark ? darkCardShadow : lightCardShadow;
 
   static List<BoxShadow> get lightCardShadow => [
         BoxShadow(
@@ -111,19 +124,19 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: background,
+      scaffoldBackgroundColor: darkBackground,
       primaryColor: purpleGlow,
-      canvasColor: surface,
-      cardColor: surface,
-      dividerColor: borderSubtle,
+      canvasColor: darkSurface,
+      cardColor: darkSurface,
+      dividerColor: darkBorderSubtle,
       colorScheme: const ColorScheme.dark(
         primary: purpleGlow,
         secondary: coralSunset,
-        surface: surface,
+        surface: darkSurface,
         error: riskCritical,
         onPrimary: Colors.white,
         onSecondary: Color(0xFF0D0C15),
-        onSurface: textPrimary,
+        onSurface: darkTextPrimary,
         onError: Colors.white,
       ),
       textTheme: TextTheme(
@@ -171,38 +184,38 @@ class AppTheme {
         ),
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: surface.withOpacity(0.95),
+        backgroundColor: darkSurface.withOpacity(0.95),
         elevation: 0,
         centerTitle: false,
-        iconTheme: const IconThemeData(color: textPrimary),
+        iconTheme: const IconThemeData(color: darkTextPrimary),
         titleTextStyle: GoogleFonts.plusJakartaSans(
           fontSize: 18,
           fontWeight: FontWeight.w700,
-          color: textPrimary,
+          color: darkTextPrimary,
         ),
       ),
       cardTheme: CardThemeData(
-        color: surface,
+        color: darkSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: border, width: 1),
+          side: const BorderSide(color: darkBorder, width: 1),
         ),
         margin: EdgeInsets.zero,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surfaceElevated,
+        fillColor: darkSurfaceElevated,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        hintStyle: GoogleFonts.inter(color: textMuted, fontSize: 13),
-        labelStyle: GoogleFonts.inter(color: textSecondary, fontSize: 14),
+        hintStyle: GoogleFonts.inter(color: darkTextMuted, fontSize: 13),
+        labelStyle: GoogleFonts.inter(color: darkTextSecondary, fontSize: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: border),
+          borderSide: const BorderSide(color: darkBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: border),
+          borderSide: const BorderSide(color: darkBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -249,30 +262,30 @@ class AppTheme {
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: surfaceElevated,
-        disabledColor: surface,
+        backgroundColor: darkSurfaceElevated,
+        disabledColor: darkSurface,
         selectedColor: purpleElectric.withOpacity(0.25),
         secondarySelectedColor: purpleGlow,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        labelStyle: GoogleFonts.inter(fontSize: 12, color: textSecondary),
+        labelStyle: GoogleFonts.inter(fontSize: 12, color: darkTextSecondary),
         secondaryLabelStyle: GoogleFonts.inter(fontSize: 12, color: coralSunset),
         brightness: Brightness.dark,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: border, width: 0.8),
+          side: const BorderSide(color: darkBorder, width: 0.8),
         ),
       ),
       dialogTheme: DialogThemeData(
-        backgroundColor: surface,
+        backgroundColor: darkSurface,
         elevation: 12,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: border, width: 1.2),
+          side: const BorderSide(color: darkBorder, width: 1.2),
         ),
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: surfaceHigh,
-        contentTextStyle: GoogleFonts.inter(color: textPrimary, fontSize: 13),
+        backgroundColor: darkSurfaceHigh,
+        contentTextStyle: GoogleFonts.inter(color: darkTextPrimary, fontSize: 13),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         behavior: SnackBarBehavior.floating,
       ),
@@ -457,12 +470,12 @@ class AppTheme {
   static TextStyle monoStyle({
     double fontSize = 12,
     FontWeight fontWeight = FontWeight.w500,
-    Color color = textSecondary,
+    Color? color,
   }) {
     return GoogleFonts.jetBrainsMono(
       fontSize: fontSize,
       fontWeight: fontWeight,
-      color: color,
+      color: color ?? textSecondary,
       letterSpacing: 0.2,
     );
   }

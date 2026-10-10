@@ -71,7 +71,7 @@ class _ChatAssistantScreenState extends State<ChatAssistantScreen> {
           return Row(
             children: [
               if (isWide) _buildLeftSidebar(provider),
-              if (isWide) const VerticalDivider(width: 1, thickness: 1, color: AppTheme.border),
+              if (isWide) VerticalDivider(width: 1, thickness: 1, color: AppTheme.border),
               Expanded(
                 child: Column(
                   children: [
@@ -128,7 +128,7 @@ class _ChatAssistantScreenState extends State<ChatAssistantScreen> {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.delete_sweep_outlined, size: 18, color: AppTheme.textMuted),
+                icon: Icon(Icons.delete_sweep_outlined, size: 18, color: AppTheme.textMuted),
                 tooltip: 'Clear Conversation',
                 onPressed: () => provider.clearChat(),
               ),
@@ -202,7 +202,7 @@ class _ChatAssistantScreenState extends State<ChatAssistantScreen> {
   Widget _buildTopHeader(AppStateProvider provider, ChatMode mode, bool isWide) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.surface,
         border: Border(bottom: BorderSide(color: AppTheme.border)),
       ),
@@ -344,7 +344,7 @@ class _ChatAssistantScreenState extends State<ChatAssistantScreen> {
                               const SnackBar(content: Text('Message copied to clipboard')),
                             );
                           },
-                          child: const Icon(Icons.copy_rounded, size: 12, color: AppTheme.textMuted),
+                          child: Icon(Icons.copy_rounded, size: 12, color: AppTheme.textMuted),
                         ),
                       ],
                     ),
@@ -569,7 +569,7 @@ class _ChatAssistantScreenState extends State<ChatAssistantScreen> {
                 labelStyle: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
-                  side: const BorderSide(color: AppTheme.border, width: 0.8),
+                  side: BorderSide(color: AppTheme.border, width: 0.8),
                 ),
                 onPressed: () => _sendMessage(q),
               ),
@@ -583,7 +583,7 @@ class _ChatAssistantScreenState extends State<ChatAssistantScreen> {
   Widget _buildInputArea(AppStateProvider provider) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.surface,
         border: Border(top: BorderSide(color: AppTheme.border)),
       ),
@@ -598,7 +598,7 @@ class _ChatAssistantScreenState extends State<ChatAssistantScreen> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppTheme.border),
+                  borderSide: BorderSide(color: AppTheme.border),
                 ),
               ),
               onSubmitted: (_) => _sendMessage(),

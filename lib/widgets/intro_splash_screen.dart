@@ -22,9 +22,12 @@ class IntroVideoSplashScreen extends StatefulWidget {
 }
 
 class _IntroVideoSplashScreenState extends State<IntroVideoSplashScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
+  late AnimationController _logoAnimController;
+  late Animation<double> _logoScale;
+  late Animation<double> _logoOpacity;
   Timer? _timer;
   bool _isTransitioning = false;
 
@@ -37,6 +40,17 @@ class _IntroVideoSplashScreenState extends State<IntroVideoSplashScreen>
     );
     _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
+    );
+
+    _logoAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..forward();
+    _logoScale = Tween<double>(begin: 0.90, end: 1.0).animate(
+      CurvedAnimation(parent: _logoAnimController, curve: Curves.easeOutCubic),
+    );
+    _logoOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _logoAnimController, curve: Curves.easeIn),
     );
 
     _timer = Timer(widget.duration, _finishIntro);
@@ -57,6 +71,7 @@ class _IntroVideoSplashScreenState extends State<IntroVideoSplashScreen>
   void dispose() {
     _timer?.cancel();
     _fadeController.dispose();
+    _logoAnimController.dispose();
     super.dispose();
   }
 
@@ -144,6 +159,38 @@ class _IntroVideoSplashScreenState extends State<IntroVideoSplashScreen>
                       style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                     ),
                     label: const Icon(Icons.arrow_forward_rounded, size: 16),
+                  ),
+                ),
+
+                // Center Official Brand Identity (Seamlessly floating with ambient cyber glow)
+                Center(
+                  child: AnimatedBuilder(
+                    animation: _logoAnimController,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: _logoOpacity.value,
+                        child: Transform.scale(
+                          scale: _logoScale.value,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF00E5FF).withOpacity(0.28),
+                                  blurRadius: 75,
+                                  spreadRadius: 25,
+                                ),
+                              ],
+                            ),
+                            child: Image.asset(
+                              'assets/images/riskora_logo_transparent.png',
+                              width: 330,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
 

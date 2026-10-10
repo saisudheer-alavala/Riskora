@@ -45,7 +45,7 @@ class _QuickChatDialogState extends State<QuickChatDialog> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppTheme.border, width: 1.2),
+        side: BorderSide(color: AppTheme.border, width: 1.2),
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 620, maxHeight: 680),
@@ -57,7 +57,7 @@ class _QuickChatDialogState extends State<QuickChatDialog> {
               decoration: BoxDecoration(
                 color: AppTheme.surfaceElevated,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                border: const Border(bottom: BorderSide(color: AppTheme.border)),
+                border: Border(bottom: BorderSide(color: AppTheme.border)),
               ),
               child: Row(
                 children: [
@@ -94,7 +94,7 @@ class _QuickChatDialogState extends State<QuickChatDialog> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.open_in_full_rounded, size: 18, color: AppTheme.textSecondary),
+                    icon: Icon(Icons.open_in_full_rounded, size: 18, color: AppTheme.textSecondary),
                     tooltip: 'Open Full Chat Screen',
                     onPressed: () {
                       Navigator.pop(context);
@@ -102,7 +102,7 @@ class _QuickChatDialogState extends State<QuickChatDialog> {
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, size: 20, color: AppTheme.textMuted),
+                    icon: Icon(Icons.close_rounded, size: 20, color: AppTheme.textMuted),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -230,7 +230,7 @@ class _QuickChatDialogState extends State<QuickChatDialog> {
             // Suggested prompt chips
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(top: BorderSide(color: AppTheme.borderSubtle)),
               ),
               child: SingleChildScrollView(
@@ -261,7 +261,7 @@ class _QuickChatDialogState extends State<QuickChatDialog> {
                         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppTheme.border),
+                          borderSide: BorderSide(color: AppTheme.border),
                         ),
                       ),
                       onSubmitted: (val) {
@@ -308,7 +308,7 @@ class _QuickChatDialogState extends State<QuickChatDialog> {
         labelStyle: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(6),
-          side: const BorderSide(color: AppTheme.border, width: 0.8),
+          side: BorderSide(color: AppTheme.border, width: 0.8),
         ),
         onPressed: () {
           provider.sendChatMessage(question);

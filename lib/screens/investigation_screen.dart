@@ -79,8 +79,8 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
               Navigator.pop(ctx);
               context.read<AppStateProvider>().updateThreatStatus(threat.id, ReviewStatus.takedownRequested);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Takedown packet dispatched to platform abuse desk! Status updated.'),
+                SnackBar(
+                  content: const Text('Takedown packet dispatched to platform abuse desk! Status updated.'),
                   backgroundColor: AppTheme.surfaceHigh,
                 ),
               );
@@ -296,7 +296,7 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
                   ),
 
                   const SizedBox(height: 18),
-                  const Divider(color: AppTheme.borderSubtle, height: 1),
+                  Divider(color: AppTheme.borderSubtle, height: 1),
                   const SizedBox(height: 18),
 
                   // Interactive Triage Action Buttons
@@ -517,7 +517,7 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
                   labelStyle: GoogleFonts.jetBrainsMono(fontSize: 10, color: AppTheme.primaryTeal),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(6),
-                    side: const BorderSide(color: AppTheme.border),
+                    side: BorderSide(color: AppTheme.border),
                   ),
                 );
               }).toList(),

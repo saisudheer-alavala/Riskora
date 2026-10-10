@@ -24,6 +24,98 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     final provider = context.read<AppStateProvider>();
     _urlController = TextEditingController(text: provider.backendUrl);
+    _similarityThreshold = provider.similarityThreshold;
+    _crawlFrequency = provider.crawlFrequency;
+    _notifyCritical = provider.notifyCritical;
+    _notifyHigh = provider.notifyHigh;
+  }
+
+  void _saveAllSettings() {
+    final provider = context.read<AppStateProvider>();
+    provider.updateBackendUrl(_urlController.text.trim());
+    provider.saveSettings(
+      similarityThreshold: _similarityThreshold,
+      crawlFrequency: _crawlFrequency,
+      notifyCritical: _notifyCritical,
+      notifyHigh: _notifyHigh,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+            const SizedBox(width: 10),
+            Text(
+              'Settings saved successfully! Neural thresholds updated.',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        backgroundColor: AppTheme.purpleElectric,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _testConnection() async {
+    final provider = context.read<AppStateProvider>();
+    provider.updateBackendUrl(_urlController.text.trim());
+    await provider.testBackendConnection();
+    if (!mounted) return;
+    final status = provider.connectionStatus;
+    final isOk = status == ApiConnectionStatus.connected;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isOk ? Icons.check_circle_rounded : Icons.info_outline_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                isOk
+                    ? 'FastAPI backend connected successfully!'
+                    : 'Backend offline or unreachable. Demo simulation mode is active.',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: isOk ? AppTheme.mintGreen : AppTheme.coralDark,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _resetDefaults() {
+    final provider = context.read<AppStateProvider>();
+    provider.resetSettingsToDefaults();
+    setState(() {
+      _urlController.text = provider.backendUrl;
+      _similarityThreshold = provider.similarityThreshold;
+      _crawlFrequency = provider.crawlFrequency;
+      _notifyCritical = provider.notifyCritical;
+      _notifyHigh = provider.notifyHigh;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.refresh_rounded, color: Colors.white, size: 18),
+            const SizedBox(width: 10),
+            Text(
+              'Reset all configurations to factory defaults.',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        backgroundColor: AppTheme.purpleElectric,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
@@ -69,7 +161,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
-                _buildStatusPill(connStatus),
+                Row(
+                  children: [
+                    _buildStatusPill(connStatus),
+                    const SizedBox(width: 10),
+                    ElevatedButton.icon(
+                      onPressed: _saveAllSettings,
+                      icon: const Icon(Icons.check_circle_rounded, size: 16),
+                      label: const Text('Save Settings'),
+                    ),
+                  ],
+                ),
               ],
             ),
 
@@ -133,15 +235,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(width: 12),
                       ElevatedButton.icon(
-                        onPressed: () {
-                          provider.updateBackendUrl(_urlController.text.trim());
-                          provider.testBackendConnection();
-                        },
+                        onPressed: _testConnection,
                         icon: connStatus == ApiConnectionStatus.checking
                             ? const SizedBox(
                                 width: 14,
                                 height: 14,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF090D16)),
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               )
                             : const Icon(Icons.network_check_rounded, size: 16),
                         label: const Text('Test Connection'),
@@ -160,7 +259,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Divider(color: AppTheme.borderSubtle),
+                  Divider(color: AppTheme.borderSubtle),
                   const SizedBox(height: 12),
                   // Simulation / Demo Mode Switch
                   SwitchListTile(
@@ -322,6 +421,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
 
+            const SizedBox(height: 24),
+
+            // Section 5: Save & Reset Action Controls
+            Row(
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _saveAllSettings,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 15),
+                  ),
+                  icon: const Icon(Icons.check_circle_rounded, size: 18),
+                  label: const Text('Save & Apply Settings'),
+                ),
+                const SizedBox(width: 14),
+                OutlinedButton.icon(
+                  onPressed: _resetDefaults,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  ),
+                  icon: const Icon(Icons.restore_rounded, size: 18),
+                  label: const Text('Reset Defaults'),
+                ),
+                const SizedBox(width: 14),
+                TextButton.icon(
+                  onPressed: () {
+                    provider.refreshAllData();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Cleared threat memory cache & re-synchronized feeds.'),
+                        backgroundColor: AppTheme.purpleElectric,
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.cleaning_services_rounded, size: 16),
+                  label: const Text('Purge Cache'),
+                ),
+              ],
+            ),
+
             const SizedBox(height: 40),
           ],
         ),
@@ -389,7 +527,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       labelStyle: GoogleFonts.jetBrainsMono(fontSize: 10, color: AppTheme.primaryTeal),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(6),
-        side: const BorderSide(color: AppTheme.border),
+        side: BorderSide(color: AppTheme.border),
       ),
       onPressed: () {
         _urlController.text = url;

@@ -7,6 +7,7 @@ import '../models/chat_message.dart';
 import '../services/api_service.dart';
 import '../services/chat_service.dart';
 import '../services/mock_data_service.dart';
+import '../theme/app_theme.dart';
 
 class AppStateProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -38,10 +39,18 @@ class AppStateProvider extends ChangeNotifier {
   bool _useDemoMode = true;
   ApiConnectionStatus _connectionStatus = ApiConnectionStatus.demoMode;
   ThemeMode _themeMode = ThemeMode.dark;
+  double _similarityThreshold = 80.0;
+  String _crawlFrequency = 'Every 1 Hour';
+  bool _notifyCritical = true;
+  bool _notifyHigh = true;
 
   // Getters
   ThemeMode get themeMode => _themeMode;
   bool get isDarkMode => _themeMode == ThemeMode.dark;
+  double get similarityThreshold => _similarityThreshold;
+  String get crawlFrequency => _crawlFrequency;
+  bool get notifyCritical => _notifyCritical;
+  bool get notifyHigh => _notifyHigh;
   BrandProfile get brandProfile => _brandProfile;
   List<ThreatItem> get threats => _threats;
   List<ScanRecord> get scanRecords => _scanRecords;
@@ -190,11 +199,38 @@ class AppStateProvider extends ChangeNotifier {
 
   void toggleTheme() {
     _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    AppTheme.currentIsDark = _themeMode == ThemeMode.dark;
     notifyListeners();
   }
 
   void setThemeMode(ThemeMode mode) {
     _themeMode = mode;
+    AppTheme.currentIsDark = _themeMode == ThemeMode.dark;
+    notifyListeners();
+  }
+
+  void saveSettings({
+    required double similarityThreshold,
+    required String crawlFrequency,
+    required bool notifyCritical,
+    required bool notifyHigh,
+  }) {
+    _similarityThreshold = similarityThreshold;
+    _crawlFrequency = crawlFrequency;
+    _notifyCritical = notifyCritical;
+    _notifyHigh = notifyHigh;
+    notifyListeners();
+  }
+
+  void resetSettingsToDefaults() {
+    _similarityThreshold = 80.0;
+    _crawlFrequency = 'Every 1 Hour';
+    _notifyCritical = true;
+    _notifyHigh = true;
+    _backendUrl = 'http://localhost:8000';
+    _useDemoMode = true;
+    _apiService.updateConfig(baseUrl: _backendUrl, useDemoMode: _useDemoMode);
+    _connectionStatus = ApiConnectionStatus.demoMode;
     notifyListeners();
   }
 

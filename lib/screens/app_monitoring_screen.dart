@@ -115,11 +115,11 @@ class _AppMonitoringScreenState extends State<AppMonitoringScreen> {
                 child: Column(
                   children: [
                     _buildRow('Store / Distribution', threat.platform),
-                    const Divider(height: 12, color: AppTheme.borderSubtle),
+                    Divider(height: 12, color: AppTheme.borderSubtle),
                     _buildRow('Name Match Vector', '${threat.nameSimilarity.toStringAsFixed(1)}%'),
-                    const Divider(height: 12, color: AppTheme.borderSubtle),
+                    Divider(height: 12, color: AppTheme.borderSubtle),
                     _buildRow('Logo Similarity', '${threat.logoSimilarity.toStringAsFixed(1)}%'),
-                    const Divider(height: 12, color: AppTheme.borderSubtle),
+                    Divider(height: 12, color: AppTheme.borderSubtle),
                     _buildRow('Malware Permission Score', '${threat.breakdown.permissionMalwareScore.toStringAsFixed(0)} / 100'),
                   ],
                 ),
@@ -263,7 +263,7 @@ class _AppMonitoringScreenState extends State<AppMonitoringScreen> {
                           style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 13),
                           decoration: InputDecoration(
                             hintText: 'Search by app name, package ID (com.example), or developer...',
-                            prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppTheme.textMuted),
+                            prefixIcon: Icon(Icons.search_rounded, size: 20, color: AppTheme.textMuted),
                             suffixIcon: _searchQuery.isNotEmpty
                                 ? IconButton(
                                     icon: const Icon(Icons.clear_rounded, size: 18),

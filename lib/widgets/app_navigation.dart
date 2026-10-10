@@ -100,7 +100,7 @@ class AppNavigationShell extends StatelessWidget {
               body: Row(
                 children: [
                   _buildDesktopSidebar(context, provider, destinations, currentIndex),
-                  const VerticalDivider(width: 1, thickness: 1, color: AppTheme.border),
+                  VerticalDivider(width: 1, thickness: 1, color: AppTheme.border),
                   Expanded(child: child),
                 ],
               ),
@@ -113,7 +113,7 @@ class AppNavigationShell extends StatelessWidget {
               body: Row(
                 children: [
                   _buildTabletNavRail(context, provider, destinations, currentIndex),
-                  const VerticalDivider(width: 1, thickness: 1, color: AppTheme.border),
+                  VerticalDivider(width: 1, thickness: 1, color: AppTheme.border),
                   Expanded(child: child),
                 ],
               ),
@@ -129,14 +129,24 @@ class AppNavigationShell extends StatelessWidget {
               title: Row(
                 children: [
                   Container(
-                    width: 28,
-                    height: 28,
+                    width: 30,
+                    height: 30,
                     decoration: BoxDecoration(
-                      gradient: AppTheme.redPointsGradient,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF00E5FF).withOpacity(0.35),
+                          blurRadius: 10,
+                          spreadRadius: 1,
+                        ),
+                      ],
                     ),
-                    child: const Center(
-                      child: Icon(Icons.shield_rounded, color: Colors.white, size: 16),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(
+                        'assets/images/riskora_emblem.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -197,21 +207,30 @@ class AppNavigationShell extends StatelessWidget {
           // Logo & Branding Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: AppTheme.borderSubtle)),
             ),
             child: Row(
               children: [
                 Container(
-                  width: 38,
-                  height: 38,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
-                    gradient: AppTheme.redPointsGradient,
                     borderRadius: BorderRadius.circular(10),
-                    boxShadow: AppTheme.glowPurple(0.35),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF00E5FF).withOpacity(0.35),
+                        blurRadius: 14,
+                        spreadRadius: 1,
+                      ),
+                    ],
                   ),
-                  child: const Center(
-                    child: Icon(Icons.shield_rounded, color: Colors.white, size: 22),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.asset(
+                      'assets/images/riskora_emblem.png',
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -395,7 +414,7 @@ class AppNavigationShell extends StatelessWidget {
           // Bottom System Status / Fast Trigger
           Container(
             padding: const EdgeInsets.all(14),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(top: BorderSide(color: AppTheme.borderSubtle)),
             ),
             child: Column(
@@ -542,15 +561,24 @@ class AppNavigationShell extends StatelessWidget {
         children: [
           const SizedBox(height: 16),
           Container(
-            width: 40,
-            height: 40,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
-              gradient: AppTheme.redPointsGradient,
               borderRadius: BorderRadius.circular(10),
-              boxShadow: AppTheme.glowPurple(0.3),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00E5FF).withOpacity(0.3),
+                  blurRadius: 12,
+                  spreadRadius: 1,
+                ),
+              ],
             ),
-            child: const Center(
-              child: Icon(Icons.shield_rounded, color: Colors.white, size: 24),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                'assets/images/riskora_emblem.png',
+                fit: BoxFit.contain,
+              ),
             ),
           ),
           const SizedBox(height: 20),
@@ -594,19 +622,31 @@ class AppNavigationShell extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(bottom: BorderSide(color: AppTheme.border)),
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 36,
-                    height: 36,
+                    width: 38,
+                    height: 38,
                     decoration: BoxDecoration(
-                      gradient: AppTheme.redPointsGradient,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF00E5FF).withOpacity(0.35),
+                          blurRadius: 12,
+                          spreadRadius: 1,
+                        ),
+                      ],
                     ),
-                    child: const Icon(Icons.shield_rounded, color: Colors.white),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.asset(
+                        'assets/images/riskora_emblem.png',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Column(
@@ -688,7 +728,7 @@ class AppNavigationShell extends StatelessWidget {
     final selectedMobileIndex = mobileIndices.indexOf(currentIndex);
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.surface,
         border: Border(top: BorderSide(color: AppTheme.border)),
       ),
