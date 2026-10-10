@@ -51,6 +51,8 @@ class AuthResult {
         user: user,
       );
 
+  String get errorMessage => message;
+
   factory AuthResult.fail(AuthResultCode code, String message) => AuthResult(
         success: false,
         code: code,
