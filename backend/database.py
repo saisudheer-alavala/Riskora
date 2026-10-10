@@ -237,3 +237,101 @@ def seed_demo_account(cursor):
             detected_at, status, notes
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, initial_threats)
+
+    # Seed Lead User Account (Kureti Titus Karthikeya)
+    lead_email = "kuretitituskathikeya@gmail.com"
+    cursor.execute("SELECT id FROM users WHERE email = ?", (lead_email,))
+    lead_user = cursor.fetchone()
+
+    if not lead_user:
+        lead_id = "usr_lead_karthikeya_001"
+        now_iso = datetime.now().isoformat()
+        cursor.execute("""
+        INSERT INTO users (id, name, email, dob, password_hash, created_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            lead_id,
+            "Kureti Titus Karthikeya",
+            lead_email,
+            "2001-06-15",
+            hash_password("RiskoraLead#2026"),
+            now_iso
+        ))
+
+        cursor.execute("""
+        INSERT INTO brand_profiles (
+            user_id, brand_name, official_website, industry, description,
+            logo_url, social_handles, mobile_apps, package_names, publishers,
+            trusted_domains, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            lead_id,
+            "Riskora SecOps Global",
+            "https://riskora.ai",
+            "Cyber Defense & AI Security",
+            "Autonomous digital risk protection and anti-impersonation intelligence.",
+            "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&q=80",
+            json.dumps(["@riskora_ai", "@riskora_secops", "@kureti_lead"]),
+            json.dumps(["Riskora Sentinel Mobile", "Riskora Guard iOS"]),
+            json.dumps(["ai.riskora.sentinel", "com.riskora.guard"]),
+            json.dumps(["Riskora Cyber Defense LLC", "Kureti Tech Systems"]),
+            json.dumps(["riskora.ai", "auth.riskora.ai", "secops.riskora.io"]),
+            now_iso
+        ))
+
+        lead_scans = [
+            ("SCN-990100", lead_id, "2026-10-10T12:00:00", "All Sources", "completed", 1680, 8, 4, 88, "[]"),
+            ("SCN-990080", lead_id, "2026-10-09T20:30:00", "Dark Web & Domains", "completed", 950, 5, 2, 60, "[]"),
+        ]
+        cursor.executemany("""
+        INSERT INTO scan_records (
+            id, user_id, scan_date, source_type, status,
+            candidates_checked, detections_count, high_risk_count,
+            duration_seconds, errors
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, lead_scans)
+
+        lead_threats = [
+            (
+                "THREAT-901",
+                lead_id,
+                "Rogue Lead Executive Profile",
+                "Riskora SecOps Global",
+                "socialMedia",
+                97,
+                "LinkedIn",
+                "https://linkedin.com/in/fake-kureti-titus-riskora",
+                "Executive impersonation: duping partners using fabricated credential badges",
+                "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=500&q=80",
+                "2026-10-10T12:05:00",
+                "flagged",
+                json.dumps([
+                    {"id": "ln1", "author": "SecOps AI Bot", "text": "High priority executive spoofing detected.", "timestamp": "2026-10-10T12:06:00"}
+                ])
+            ),
+            (
+                "THREAT-902",
+                lead_id,
+                "Malicious Riskora CLI Trojan",
+                "Riskora SecOps Global",
+                "appStore",
+                91,
+                "GitHub / PyPI Mirror",
+                "https://pypi-mirror.fake/packages/riskora-secops-fake",
+                "Package typo-squat injecting backdoor reverse shell",
+                "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&q=80",
+                "2026-10-10T12:10:00",
+                "investigating",
+                json.dumps([
+                    {"id": "ln2", "author": "Lead Architect", "text": "Reported to abuse desk for immediate revocation.", "timestamp": "2026-10-10T12:15:00"}
+                ])
+            )
+        ]
+        cursor.executemany("""
+        INSERT INTO threats (
+            id, user_id, title, brand_name, type, risk_score,
+            platform, detected_url, matched_pattern, screenshot_url,
+            detected_at, status, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, lead_threats)
+
