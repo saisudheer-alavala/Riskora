@@ -70,8 +70,19 @@ def get_current_user_id(authorization: Optional[str] = Header(None)) -> str:
     return default_id
 
 # ==========================================
-# --- HEALTH CHECK ---
+# --- ROOT & HEALTH CHECK ---
 # ==========================================
+@app.get("/")
+def root():
+    return {
+        "status": "online",
+        "service": "RISKORA SecOps Intelligence API",
+        "version": "1.0.0",
+        "docs_url": "/docs",
+        "health_check": "/api/health",
+        "message": "Riskora SecOps Backend is running successfully. Visit /docs to test and explore all endpoints."
+    }
+
 @app.get("/api/health")
 def health_check():
     return {
