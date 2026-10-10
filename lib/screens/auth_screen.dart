@@ -90,8 +90,8 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   void _handleQuickDemoLogin() {
-    _loginIdentifierController.text = 'analyst@riskora.ai';
-    _loginPasswordController.text = 'RiskoraSecOps#2026';
+    _loginIdentifierController.text = 'kuretitituskathikeya@gmail.com';
+    _loginPasswordController.text = 'RiskoraLead#2026';
     _handleLogin();
   }
 
@@ -595,7 +595,7 @@ class _AuthScreenState extends State<AuthScreen> {
           keyboardType: TextInputType.emailAddress,
           style: GoogleFonts.inter(color: textColor, fontSize: 13),
           decoration: InputDecoration(
-            hintText: 'e.g. analyst@riskora.ai or admin@riskora.com',
+            hintText: 'e.g. kuretitituskathikeya@gmail.com or admin@riskora.com',
             prefixIcon: const Icon(Icons.alternate_email_rounded, color: AppTheme.primaryTeal, size: 18),
             filled: true,
             fillColor: inputBg,
@@ -734,6 +734,13 @@ class _AuthScreenState extends State<AuthScreen> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
+                  _buildQuickChip(
+                    label: 'Project Lead (Verified)',
+                    email: 'kuretitituskathikeya@gmail.com',
+                    pass: 'RiskoraLead#2026',
+                    color: isDark ? AppTheme.coralSunset : AppTheme.coralDark,
+                    isDark: isDark,
+                  ),
                   _buildQuickChip(
                     label: 'Analyst (Verified)',
                     email: 'analyst@riskora.ai',
@@ -1450,10 +1457,19 @@ class _AuthScreenState extends State<AuthScreen> {
                   const SizedBox(height: 10),
                   _buildGoogleAccountTile(
                     ctx: ctx,
-                    name: 'Sai Sudheer (Riskora Lead)',
+                    name: 'Kureti Titus Karthikeya (Project Lead)',
+                    email: 'kuretitituskathikeya@gmail.com',
+                    avatarLetter: 'K',
+                    avatarColor: const Color(0xFF4285F4),
+                    isDark: isDark,
+                  ),
+                  const SizedBox(height: 10),
+                  _buildGoogleAccountTile(
+                    ctx: ctx,
+                    name: 'Sai Sudheer (SecOps Lead)',
                     email: 'saisudheer@riskora.ai',
                     avatarLetter: 'S',
-                    avatarColor: const Color(0xFF4285F4),
+                    avatarColor: const Color(0xFF8B5CF6),
                     isDark: isDark,
                   ),
                   const SizedBox(height: 10),

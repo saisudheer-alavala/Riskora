@@ -885,7 +885,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Direct Abuse Desk PGP Encrypted Inbox',
+                    'Direct Abuse Desk & Project Lead Escalations',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -894,7 +894,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'For classified disclosures or enterprise emergency escalations, transmit PGP-encrypted intelligence to: abuse-desk@riskora.ai (Key ID: 0x9B2A7E14)',
+                    'For enterprise emergency escalations or classified disclosures, dispatch directly to Project Lead: kuretitituskathikeya@gmail.com (PGP Key ID: 0x9B2A7E14)',
                     style: GoogleFonts.inter(fontSize: 13, color: textMuted),
                   ),
                 ],

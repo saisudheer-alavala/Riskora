@@ -22,7 +22,7 @@ Widget createWebVideoBackground() {
         ..style.width = '100%'
         ..style.height = '100%'
         ..style.objectFit = 'cover'
-        ..style.pointerEvents = 'auto'
+        ..style.pointerEvents = 'none'
         ..style.opacity = '1.0';
 
       videoElement.play();

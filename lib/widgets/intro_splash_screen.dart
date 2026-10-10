@@ -162,37 +162,8 @@ class _IntroVideoSplashScreenState extends State<IntroVideoSplashScreen>
                   ),
                 ),
 
-                // Center Official Brand Identity (Seamlessly floating with ambient cyber glow)
-                Center(
-                  child: AnimatedBuilder(
-                    animation: _logoAnimController,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: _logoOpacity.value,
-                        child: Transform.scale(
-                          scale: _logoScale.value,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF00E5FF).withOpacity(0.28),
-                                  blurRadius: 75,
-                                  spreadRadius: 25,
-                                ),
-                              ],
-                            ),
-                            child: Image.asset(
-                              'assets/images/riskora_logo_transparent.png',
-                              width: 330,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                // Ambient Vignette Center (The newly branded video features the official cyan Riskora emblem directly)
+                const SizedBox.shrink(),
 
                 // Bottom Telemetry Loading Indicator
                 Positioned(

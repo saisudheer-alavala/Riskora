@@ -631,11 +631,18 @@ class AboutUsScreen extends StatelessWidget {
   Widget _buildLeadershipSection(BuildContext context, bool isDark, Color textColor, Color textMuted) {
     final team = [
       {
+        'name': 'Kureti Titus Karthikeya',
+        'role': 'Founder & Project Lead // Chief Cyber Defense Architect',
+        'cred': 'Lead Architect of Riskora Autonomous Threat Matrix (kuretitituskathikeya@gmail.com)',
+        'icon': Icons.stars_rounded,
+        'color': const Color(0xFF00E5FF),
+      },
+      {
         'name': 'Dr. Aaron Sterling',
         'role': 'Chief AI Security Architect',
         'cred': 'Ex-DARPA Cyber, Stanford PhD',
         'icon': Icons.military_tech_rounded,
-        'color': const Color(0xFF00E5FF),
+        'color': AppTheme.coralSunset,
       },
       {
         'name': 'Elena Rostova',

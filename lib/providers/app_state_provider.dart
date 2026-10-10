@@ -93,6 +93,15 @@ class AppStateProvider extends ChangeNotifier {
   // Registered Corporate Users Database (Strict verification - prevents fake logins)
   final List<UserAccount> _registeredUsers = [
     UserAccount(
+      name: 'Kureti Titus Karthikeya',
+      email: 'kuretitituskathikeya@gmail.com',
+      password: 'RiskoraLead#2026',
+      role: 'Project Lead & Chief Cyber Defense Architect',
+      dob: DateTime(2001, 6, 15),
+      isVerified: true,
+      authProvider: 'local',
+    ),
+    UserAccount(
       name: 'Senior SecOps Analyst',
       email: 'analyst@riskora.ai',
       password: 'RiskoraSecOps#2026',
