@@ -6,6 +6,8 @@ import '../providers/app_state_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/animated_gradient_button.dart';
 import '../widgets/red_points_background.dart';
+import 'about_us_screen.dart';
+import 'contact_us_screen.dart';
 
 /// Red Points-inspired public Landing / Home Page for RISKORA.
 /// Features:
@@ -312,9 +314,23 @@ class _HomeScreenState extends State<HomeScreen> {
               if (isDesktop) ...[
                 _buildNavLink('Home', () => _scrollTo(_homeKey), textColor, isActive: true),
                 const SizedBox(width: 8),
-                _buildNavLink('About us', () => _scrollTo(_aboutKey), textColor),
+                _buildNavLink(
+                  'About us',
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AboutUsScreen()),
+                  ),
+                  textColor,
+                ),
                 const SizedBox(width: 8),
-                _buildNavLink('Contact us', () => _scrollTo(_contactKey), textColor),
+                _buildNavLink(
+                  'Contact us',
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+                  ),
+                  textColor,
+                ),
                 const SizedBox(width: 24),
               ],
 
@@ -437,7 +453,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: const Text('About us'),
                   onTap: () {
                     Navigator.pop(ctx);
-                    _scrollTo(_aboutKey);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AboutUsScreen()),
+                    );
                   },
                 ),
                 ListTile(
@@ -445,7 +464,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: const Text('Contact us'),
                   onTap: () {
                     Navigator.pop(ctx);
-                    _scrollTo(_contactKey);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+                    );
                   },
                 ),
                 const Divider(),
@@ -554,7 +576,10 @@ class _HomeScreenState extends State<HomeScreen> {
               text: 'Access SecOps Portal (Login)',
             ),
             OutlinedButton.icon(
-              onPressed: () => _scrollTo(_contactKey),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+              ),
               icon: const Icon(Icons.calendar_month_rounded, size: 16),
               label: const Text('Request Enterprise Assessment'),
               style: OutlinedButton.styleFrom(
@@ -1338,11 +1363,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text('Home', style: GoogleFonts.inter(fontSize: 12, color: textMuted)),
                   ),
                   InkWell(
-                    onTap: () => _scrollTo(_aboutKey),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AboutUsScreen()),
+                    ),
                     child: Text('About us', style: GoogleFonts.inter(fontSize: 12, color: textMuted)),
                   ),
                   InkWell(
-                    onTap: () => _scrollTo(_contactKey),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+                    ),
                     child: Text('Contact us', style: GoogleFonts.inter(fontSize: 12, color: textMuted)),
                   ),
                 ],

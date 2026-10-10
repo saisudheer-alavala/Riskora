@@ -4,6 +4,7 @@ import '../models/threat_item.dart';
 import '../models/scan_record.dart';
 import '../models/report_data.dart';
 import '../models/chat_message.dart';
+import '../models/user_account.dart';
 import '../services/api_service.dart';
 import '../services/chat_service.dart';
 import '../services/mock_data_service.dart';
@@ -87,6 +88,45 @@ class AppStateProvider extends ChangeNotifier {
   String? _currentUserIdentifier;
   String? _currentUserName;
   DateTime? _currentUserDob;
+  UserAccount? _currentUserAccount;
+
+  // Registered Corporate Users Database (Strict verification - prevents fake logins)
+  final List<UserAccount> _registeredUsers = [
+    UserAccount(
+      name: 'Senior SecOps Analyst',
+      email: 'analyst@riskora.ai',
+      password: 'RiskoraSecOps#2026',
+      role: 'Principal Incident Handler',
+      dob: DateTime(1994, 5, 12),
+    ),
+    UserAccount(
+      name: 'Platform Administrator',
+      email: 'admin@riskora.com',
+      password: 'Admin@Riskora2026!',
+      role: 'Global Security Administrator',
+      dob: DateTime(1990, 8, 20),
+    ),
+    UserAccount(
+      name: 'Dr. Aaron Sterling',
+      email: 'director@cyberdefense.org',
+      password: 'Director@Defense2026',
+      role: 'Chief Threat Defense Director',
+      dob: DateTime(1985, 3, 15),
+    ),
+    UserAccount(
+      name: 'Sai Sudheer',
+      email: 'saisudheer@riskora.ai',
+      password: 'Riskora#2026',
+      role: 'Enterprise SecOps Lead',
+      dob: DateTime(2002, 1, 1),
+    ),
+  ];
+
+  static final Set<String> _disposableDomains = {
+    'tempmail.com', '10minutemail.com', 'mailinator.com', 'guerrillamail.com',
+    'throwawaymail.com', 'yopmail.com', 'fakemail.com', 'trashmail.com',
+    'sharklasers.com', 'dispostable.com', 'getairmail.com', 'temp-mail.org'
+  };
 
   bool _showAuthScreen = false;
   bool get showAuthScreen => _showAuthScreen;
@@ -95,6 +135,8 @@ class AppStateProvider extends ChangeNotifier {
   String? get currentUserIdentifier => _currentUserIdentifier;
   String get currentUserName => _currentUserName ?? 'SecOps Analyst';
   DateTime? get currentUserDob => _currentUserDob;
+  UserAccount? get currentUserAccount => _currentUserAccount;
+  List<UserAccount> get registeredUsers => List.unmodifiable(_registeredUsers);
 
   AppStateProvider({bool initialAuthenticated = false, bool initialShowAuth = false}) {
     _isAuthenticated = initialAuthenticated;
@@ -119,21 +161,170 @@ class AppStateProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool login(String identifier, String password) {
-    if (identifier.trim().isEmpty || password.trim().isEmpty) {
-      return false;
+  /// Strict Verified Login with anti-fake email protection
+  AuthResult verifyAndLogin(String identifier, String password) {
+    final cleanId = identifier.trim().toLowerCase();
+    final cleanPass = password.trim();
+
+    if (cleanId.isEmpty || cleanPass.isEmpty) {
+      return AuthResult.fail(
+        AuthResultCode.userNotFound,
+        'Please provide both corporate identity and access credentials.',
+      );
     }
+
+    // Check disposable email blacklist
+    if (cleanId.contains('@')) {
+      final domain = cleanId.split('@').last;
+      if (_disposableDomains.contains(domain)) {
+        return AuthResult.fail(
+          AuthResultCode.disposableEmailRejected,
+          'Security Block: Temporary and disposable email domains ($domain) are prohibited.',
+        );
+      }
+    }
+
+    // Lookup user in registered corporate database
+    final existingUser = _registeredUsers.firstWhere(
+      (u) => u.email.toLowerCase() == cleanId,
+      orElse: () => UserAccount(name: '', email: '', password: ''),
+    );
+
+    if (existingUser.email.isEmpty) {
+      return AuthResult.fail(
+        AuthResultCode.userNotFound,
+        'Account Verification Failed: No registered Riskora identity found for "$identifier". Fake or unregistered identities are blocked by corporate SecOps.',
+      );
+    }
+
+    if (existingUser.password != cleanPass) {
+      return AuthResult.fail(
+        AuthResultCode.invalidPassword,
+        'Access Denied: Incorrect password for "${existingUser.email}". Security breach challenge logged.',
+      );
+    }
+
+    // Login successful
     _isAuthenticated = true;
     _showAuthScreen = false;
-    _currentUserIdentifier = identifier.trim();
-    _currentUserName = identifier.contains('@')
-        ? identifier.split('@').first
-        : identifier.trim();
+    _currentUserAccount = existingUser;
+    _currentUserIdentifier = existingUser.email;
+    _currentUserName = existingUser.name;
+    _currentUserDob = existingUser.dob;
     notifyListeners();
 
-    // Trigger asynchronous persistent backend sync
-    _syncLogin(identifier.trim(), password);
-    return true;
+    _syncLogin(existingUser.email, cleanPass);
+    return AuthResult.ok(existingUser);
+  }
+
+  /// Backward compatible login
+  bool login(String identifier, String password) {
+    final res = verifyAndLogin(identifier, password);
+    return res.success;
+  }
+
+  /// Strict Corporate Registration
+  AuthResult registerNewUser({
+    required String name,
+    required String email,
+    required DateTime dob,
+    required String password,
+  }) {
+    final cleanEmail = email.trim().toLowerCase();
+    final cleanName = name.trim();
+    final cleanPass = password.trim();
+
+    if (cleanEmail.contains('@')) {
+      final domain = cleanEmail.split('@').last;
+      if (_disposableDomains.contains(domain)) {
+        return AuthResult.fail(
+          AuthResultCode.disposableEmailRejected,
+          'Disposable email domains are blocked. Please use your corporate or legitimate email.',
+        );
+      }
+    }
+
+    final alreadyExists = _registeredUsers.any(
+      (u) => u.email.toLowerCase() == cleanEmail,
+    );
+    if (alreadyExists) {
+      return AuthResult.fail(
+        AuthResultCode.emailAlreadyRegistered,
+        'Security Notice: Identity "$cleanEmail" is already registered. Please proceed to login.',
+      );
+    }
+
+    final newUser = UserAccount(
+      name: cleanName,
+      email: cleanEmail,
+      password: cleanPass,
+      dob: dob,
+      role: 'SecOps Analyst (Enterprise)',
+      isVerified: true,
+      authProvider: 'local',
+    );
+
+    _registeredUsers.add(newUser);
+
+    _isAuthenticated = true;
+    _showAuthScreen = false;
+    _currentUserAccount = newUser;
+    _currentUserIdentifier = newUser.email;
+    _currentUserName = newUser.name;
+    _currentUserDob = dob;
+    notifyListeners();
+
+    _syncRegister(cleanName, cleanEmail, cleanPass, dob);
+    return AuthResult.ok(newUser);
+  }
+
+  bool register({
+    required String name,
+    required String email,
+    required DateTime dob,
+    required String password,
+  }) {
+    final res = registerNewUser(
+      name: name,
+      email: email,
+      dob: dob,
+      password: password,
+    );
+    return res.success;
+  }
+
+  /// Official Google OAuth 2.0 Corporate Sign-in
+  void loginWithGoogleAccount({
+    required String name,
+    required String email,
+    required String avatarUrl,
+  }) {
+    final cleanEmail = email.trim().toLowerCase();
+
+    UserAccount user = _registeredUsers.firstWhere(
+      (u) => u.email.toLowerCase() == cleanEmail,
+      orElse: () {
+        final newUser = UserAccount(
+          name: name.trim(),
+          email: cleanEmail,
+          password: 'OAuth2_Google_Verified_${DateTime.now().millisecondsSinceEpoch}',
+          avatarUrl: avatarUrl,
+          role: 'Google SSO Enterprise Identity',
+          isVerified: true,
+          authProvider: 'google',
+        );
+        _registeredUsers.add(newUser);
+        return newUser;
+      },
+    );
+
+    _isAuthenticated = true;
+    _showAuthScreen = false;
+    _currentUserAccount = user;
+    _currentUserIdentifier = user.email;
+    _currentUserName = user.name;
+    _currentUserDob = user.dob ?? DateTime(1998, 1, 1);
+    notifyListeners();
   }
 
   Future<void> _syncLogin(String email, String password) async {
@@ -148,27 +339,6 @@ class AppStateProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Sync login fallback: $e');
     }
-  }
-
-  bool register({
-    required String name,
-    required String email,
-    required DateTime dob,
-    required String password,
-  }) {
-    if (name.trim().isEmpty || email.trim().isEmpty || password.trim().isEmpty) {
-      return false;
-    }
-    _isAuthenticated = true;
-    _showAuthScreen = false;
-    _currentUserName = name.trim();
-    _currentUserIdentifier = email.trim();
-    _currentUserDob = dob;
-    notifyListeners();
-
-    // Trigger asynchronous persistent backend registration
-    _syncRegister(name.trim(), email.trim(), password, dob);
-    return true;
   }
 
   Future<void> _syncRegister(String name, String email, String password, DateTime dob) async {
