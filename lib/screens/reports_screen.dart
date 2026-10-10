@@ -135,32 +135,37 @@ class _ReportsScreenState extends State<ReportsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Security Intelligence Reports',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.textPrimary,
-                          letterSpacing: -0.5,
-                        ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 650;
+                final titleCol = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Security Intelligence Reports',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
+                        letterSpacing: -0.5,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Comprehensive digital perimeter analytics, false positive audits, and executive briefings.',
-                        style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
-                      ),
-                    ],
-                  ),
-                ),
-                Wrap(
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Comprehensive digital perimeter analytics, false positive audits, and executive briefings.',
+                      style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                );
+
+                final actionsWrap = Wrap(
                   spacing: 10,
+                  runSpacing: 10,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     OutlinedButton.icon(
                       onPressed: () {
@@ -177,8 +182,29 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       label: const Text('Generate PDF Brief'),
                     ),
                   ],
-                ),
-              ],
+                );
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      titleCol,
+                      const SizedBox(height: 14),
+                      actionsWrap,
+                    ],
+                  );
+                }
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(child: titleCol),
+                    const SizedBox(width: 16),
+                    actionsWrap,
+                  ],
+                );
+              },
             ),
 
             const SizedBox(height: 22),
@@ -191,72 +217,174 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppTheme.border),
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.date_range_rounded, size: 18, color: AppTheme.primaryTeal),
-                  const SizedBox(width: 10),
-                  Text('Audit Period:', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
-                  const SizedBox(width: 10),
-                  ...['Last 7 Days', 'Last 30 Days', 'Last 90 Days', 'All Time'].map((range) {
-                    final isSel = _selectedRange == range;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 6),
-                      child: ChoiceChip(
-                        label: Text(range),
-                        selected: isSel,
-                        onSelected: (_) => setState(() => _selectedRange = range),
-                      ),
-                    );
-                  }),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    const Icon(Icons.date_range_rounded, size: 18, color: AppTheme.primaryTeal),
+                    const SizedBox(width: 10),
+                    Text('Audit Period:', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
+                    const SizedBox(width: 10),
+                    ...['Last 7 Days', 'Last 30 Days', 'Last 90 Days', 'All Time'].map((range) {
+                      final isSel = _selectedRange == range;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: ChoiceChip(
+                          label: Text(range),
+                          selected: isSel,
+                          onSelected: (_) => setState(() => _selectedRange = range),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
               ),
             ),
 
             const SizedBox(height: 20),
 
             // Metric Cards Grid
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMetricTile(
-                    'Confirmed Threats',
-                    '${report.confirmedThreats}',
-                    'Active malicious clones',
-                    AppTheme.riskCritical,
-                    Icons.security_update_warning_rounded,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: _buildMetricTile(
-                    'False Positives',
-                    '${report.falsePositives}',
-                    'Flagged benign entities',
-                    AppTheme.purpleGlow,
-                    Icons.check_circle_outline_rounded,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: _buildMetricTile(
-                    'Takedowns Filed',
-                    '${report.takedownsInitiated}',
-                    'Registrar & store notices',
-                    AppTheme.riskHigh,
-                    Icons.gavel_rounded,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: _buildMetricTile(
-                    'Model Accuracy',
-                    '${report.averageDetectionAccuracy}%',
-                    'Verified precision index',
-                    AppTheme.primaryTeal,
-                    Icons.insights_rounded,
-                  ),
-                ),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 850;
+                final isMedium = constraints.maxWidth >= 480 && !isWide;
+
+                if (isWide) {
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: _buildMetricTile(
+                          'Confirmed Threats',
+                          '${report.confirmedThreats}',
+                          'Active malicious clones',
+                          AppTheme.riskCritical,
+                          Icons.security_update_warning_rounded,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _buildMetricTile(
+                          'False Positives',
+                          '${report.falsePositives}',
+                          'Flagged benign entities',
+                          AppTheme.purpleGlow,
+                          Icons.check_circle_outline_rounded,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _buildMetricTile(
+                          'Takedowns Filed',
+                          '${report.takedownsInitiated}',
+                          'Registrar & store notices',
+                          AppTheme.riskHigh,
+                          Icons.gavel_rounded,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _buildMetricTile(
+                          'Model Accuracy',
+                          '${report.averageDetectionAccuracy}%',
+                          'Verified precision index',
+                          AppTheme.primaryTeal,
+                          Icons.insights_rounded,
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                if (isMedium) {
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildMetricTile(
+                              'Confirmed Threats',
+                              '${report.confirmedThreats}',
+                              'Active malicious clones',
+                              AppTheme.riskCritical,
+                              Icons.security_update_warning_rounded,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: _buildMetricTile(
+                              'False Positives',
+                              '${report.falsePositives}',
+                              'Flagged benign entities',
+                              AppTheme.purpleGlow,
+                              Icons.check_circle_outline_rounded,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildMetricTile(
+                              'Takedowns Filed',
+                              '${report.takedownsInitiated}',
+                              'Registrar & store notices',
+                              AppTheme.riskHigh,
+                              Icons.gavel_rounded,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: _buildMetricTile(
+                              'Model Accuracy',
+                              '${report.averageDetectionAccuracy}%',
+                              'Verified precision index',
+                              AppTheme.primaryTeal,
+                              Icons.insights_rounded,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                }
+
+                return Column(
+                  children: [
+                    _buildMetricTile(
+                      'Confirmed Threats',
+                      '${report.confirmedThreats}',
+                      'Active malicious clones',
+                      AppTheme.riskCritical,
+                      Icons.security_update_warning_rounded,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildMetricTile(
+                      'False Positives',
+                      '${report.falsePositives}',
+                      'Flagged benign entities',
+                      AppTheme.purpleGlow,
+                      Icons.check_circle_outline_rounded,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildMetricTile(
+                      'Takedowns Filed',
+                      '${report.takedownsInitiated}',
+                      'Registrar & store notices',
+                      AppTheme.riskHigh,
+                      Icons.gavel_rounded,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildMetricTile(
+                      'Model Accuracy',
+                      '${report.averageDetectionAccuracy}%',
+                      'Verified precision index',
+                      AppTheme.primaryTeal,
+                      Icons.insights_rounded,
+                    ),
+                  ],
+                );
+              },
             ),
 
             const SizedBox(height: 24),
@@ -437,10 +565,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 8,
             children: [
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(width: 10, height: 10, decoration: const BoxDecoration(color: AppTheme.riskCritical, shape: BoxShape.circle)),
                   const SizedBox(width: 8),
@@ -448,6 +580,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ],
               ),
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(width: 10, height: 10, decoration: const BoxDecoration(color: AppTheme.purpleGlow, shape: BoxShape.circle)),
                   const SizedBox(width: 8),

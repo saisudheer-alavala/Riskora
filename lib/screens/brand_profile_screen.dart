@@ -237,32 +237,32 @@ class _BrandProfileScreenState extends State<BrandProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header & Mode Toggle
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Brand Profile & Asset Perimeter',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.textPrimary,
-                            letterSpacing: -0.5,
-                          ),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isNarrow = constraints.maxWidth < 640;
+                  final titleCol = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Brand Profile & Asset Perimeter',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: isNarrow ? 20 : 24,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.textPrimary,
+                          letterSpacing: -0.5,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Define official brand identities, verified handles, and package IDs for crawler baseline matching.',
-                          style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Wrap(
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Define official brand identities, verified handles, and package IDs for crawler baseline matching.',
+                        style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
+                      ),
+                    ],
+                  );
+
+                  final actions = Wrap(
                     spacing: 10,
+                    runSpacing: 8,
                     children: [
                       if (!_isEditing)
                         ElevatedButton.icon(
@@ -301,8 +301,28 @@ class _BrandProfileScreenState extends State<BrandProfileScreen> {
                         ),
                       ],
                     ],
-                  ),
-                ],
+                  );
+
+                  if (isNarrow) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        titleCol,
+                        const SizedBox(height: 12),
+                        actions,
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(child: titleCol),
+                      const SizedBox(width: 16),
+                      actions,
+                    ],
+                  );
+                },
               ),
 
               const SizedBox(height: 22),
@@ -355,12 +375,16 @@ class _BrandProfileScreenState extends State<BrandProfileScreen> {
                         children: [
                           Row(
                             children: [
-                              Text(
-                                _nameController.text,
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppTheme.textPrimary,
+                              Flexible(
+                                child: Text(
+                                  _nameController.text,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.textPrimary,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -384,6 +408,8 @@ class _BrandProfileScreenState extends State<BrandProfileScreen> {
                           const SizedBox(height: 4),
                           Text(
                             _websiteController.text,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.jetBrainsMono(
                               fontSize: 12,
                               color: AppTheme.primaryTeal,
@@ -392,6 +418,8 @@ class _BrandProfileScreenState extends State<BrandProfileScreen> {
                           const SizedBox(height: 4),
                           Text(
                             '${_socialAccounts.length} Verified Social Handles • ${_officialApps.length} Mobile App Packages • ${_trustedIdentifiers.length} Trusted Identifiers',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary),
                           ),
                         ],
@@ -409,46 +437,74 @@ class _BrandProfileScreenState extends State<BrandProfileScreen> {
                 subtitle: 'Core organization identity registered with RISKORA threat neural network',
                 child: Column(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _nameController,
-                            enabled: _isEditing,
-                            decoration: const InputDecoration(labelText: 'Company / Brand Name *'),
-                            validator: (v) => v == null || v.trim().isEmpty ? 'Company name is required' : null,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _industryController,
-                            enabled: _isEditing,
-                            decoration: const InputDecoration(labelText: 'Industry / Sector'),
-                          ),
-                        ),
-                      ],
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isNarrow = constraints.maxWidth < 540;
+                        final nameField = TextFormField(
+                          controller: _nameController,
+                          enabled: _isEditing,
+                          decoration: const InputDecoration(labelText: 'Company / Brand Name *'),
+                          validator: (v) => v == null || v.trim().isEmpty ? 'Company name is required' : null,
+                        );
+                        final industryField = TextFormField(
+                          controller: _industryController,
+                          enabled: _isEditing,
+                          decoration: const InputDecoration(labelText: 'Industry / Sector'),
+                        );
+
+                        if (isNarrow) {
+                          return Column(
+                            children: [
+                              nameField,
+                              const SizedBox(height: 16),
+                              industryField,
+                            ],
+                          );
+                        }
+
+                        return Row(
+                          children: [
+                            Expanded(child: nameField),
+                            const SizedBox(width: 16),
+                            Expanded(child: industryField),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _websiteController,
-                            enabled: _isEditing,
-                            decoration: const InputDecoration(labelText: 'Official Website Domain *'),
-                            validator: (v) => v == null || v.trim().isEmpty ? 'Official website is required' : null,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _logoController,
-                            enabled: _isEditing,
-                            decoration: const InputDecoration(labelText: 'Logo Image URL'),
-                          ),
-                        ),
-                      ],
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isNarrow = constraints.maxWidth < 540;
+                        final websiteField = TextFormField(
+                          controller: _websiteController,
+                          enabled: _isEditing,
+                          decoration: const InputDecoration(labelText: 'Official Website Domain *'),
+                          validator: (v) => v == null || v.trim().isEmpty ? 'Official website is required' : null,
+                        );
+                        final logoField = TextFormField(
+                          controller: _logoController,
+                          enabled: _isEditing,
+                          decoration: const InputDecoration(labelText: 'Logo Image URL'),
+                        );
+
+                        if (isNarrow) {
+                          return Column(
+                            children: [
+                              websiteField,
+                              const SizedBox(height: 16),
+                              logoField,
+                            ],
+                          );
+                        }
+
+                        return Row(
+                          children: [
+                            Expanded(child: websiteField),
+                            const SizedBox(width: 16),
+                            Expanded(child: logoField),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -530,6 +586,8 @@ class _BrandProfileScreenState extends State<BrandProfileScreen> {
                                       if (item.url.isNotEmpty)
                                         Text(
                                           item.url,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                           style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted),
                                         ),
                                     ],
@@ -605,6 +663,8 @@ class _BrandProfileScreenState extends State<BrandProfileScreen> {
                                       ),
                                       Text(
                                         'Package: ${app.packageId} • Publisher: ${app.publisher}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                         style: GoogleFonts.jetBrainsMono(
                                           fontSize: 11,
                                           color: AppTheme.primaryTeal,

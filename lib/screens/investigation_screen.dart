@@ -142,32 +142,34 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header with Threat Selector Switcher
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Threat Forensics & Investigation',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.textPrimary,
-                          letterSpacing: -0.5,
-                        ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 680;
+                final titleCol = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Threat Forensics & Investigation',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
+                        letterSpacing: -0.5,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Deep forensic analysis, neural evidence score decomposition, and takedown orchestration workbench.',
-                        style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
-                      ),
-                    ],
-                  ),
-                ),
-                // Switch Threat Dropdown
-                Container(
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Deep forensic analysis, neural evidence score decomposition, and takedown orchestration workbench.',
+                      style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                );
+
+                final threatDropdown = Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
                     color: AppTheme.surfaceElevated,
@@ -177,13 +179,17 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: threat.id,
+                      isExpanded: isNarrow,
                       dropdownColor: AppTheme.surfaceElevated,
                       style: GoogleFonts.jetBrainsMono(color: AppTheme.textPrimary, fontSize: 12),
                       icon: const Icon(Icons.arrow_drop_down_rounded, color: AppTheme.primaryTeal),
                       items: threats.map((t) {
                         return DropdownMenuItem(
                           value: t.id,
-                          child: Text('${t.id} - ${t.identifier} (${t.riskScore})'),
+                          child: Text(
+                            '${t.id} - ${t.identifier} (${t.riskScore})',
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         );
                       }).toList(),
                       onChanged: (id) {
@@ -194,8 +200,29 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
                       },
                     ),
                   ),
-                ),
-              ],
+                );
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      titleCol,
+                      const SizedBox(height: 14),
+                      threatDropdown,
+                    ],
+                  );
+                }
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(child: titleCol),
+                    const SizedBox(width: 16),
+                    threatDropdown,
+                  ],
+                );
+              },
             ),
 
             const SizedBox(height: 22),
@@ -545,60 +572,96 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
             style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceElevated,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppTheme.purpleGlow.withOpacity(0.35)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: const [
-                          Icon(Icons.verified_rounded, size: 14, color: AppTheme.purpleGlow),
-                          SizedBox(width: 6),
-                          Text('Official Brand Asset', style: TextStyle(color: AppTheme.purpleGlow, fontSize: 11, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(brand.companyName, style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13)),
-                      Text(brand.officialWebsite, style: GoogleFonts.jetBrainsMono(color: AppTheme.textMuted, fontSize: 11)),
-                    ],
-                  ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 540;
+
+              final officialCard = Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceElevated,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppTheme.purpleGlow.withOpacity(0.35)),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceElevated,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppTheme.riskCritical.withOpacity(0.3)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: const [
-                          Icon(Icons.warning_amber_rounded, size: 14, color: AppTheme.riskCritical),
-                          SizedBox(width: 6),
-                          Text('Detected Rogue Asset', style: TextStyle(color: AppTheme.riskCritical, fontSize: 11, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(threat.title, style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      Text(threat.identifier, style: GoogleFonts.jetBrainsMono(color: AppTheme.riskHigh, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
-                    ],
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: const [
+                        Icon(Icons.verified_rounded, size: 14, color: AppTheme.purpleGlow),
+                        SizedBox(width: 6),
+                        Text('Official Brand Asset', style: TextStyle(color: AppTheme.purpleGlow, fontSize: 11, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      brand.companyName,
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      brand.officialWebsite,
+                      style: GoogleFonts.jetBrainsMono(color: AppTheme.textMuted, fontSize: 11),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              );
+
+              final rogueCard = Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceElevated,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppTheme.riskCritical.withOpacity(0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: const [
+                        Icon(Icons.warning_amber_rounded, size: 14, color: AppTheme.riskCritical),
+                        SizedBox(width: 6),
+                        Text('Detected Rogue Asset', style: TextStyle(color: AppTheme.riskCritical, fontSize: 11, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      threat.title,
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      threat.identifier,
+                      style: GoogleFonts.jetBrainsMono(color: AppTheme.riskHigh, fontSize: 11),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              );
+
+              if (isNarrow) {
+                return Column(
+                  children: [
+                    officialCard,
+                    const SizedBox(height: 12),
+                    rogueCard,
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(child: officialCard),
+                  const SizedBox(width: 12),
+                  Expanded(child: rogueCard),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -636,25 +699,43 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
           ),
           const SizedBox(height: 14),
           // Add note field
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _noteController,
-                  style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 13),
-                  decoration: const InputDecoration(
-                    hintText: 'Add an investigation observation, registrar IP, or action note...',
-                  ),
-                  onSubmitted: (_) => _addNote(threat),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 480;
+              final textField = TextField(
+                controller: _noteController,
+                style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 13),
+                decoration: const InputDecoration(
+                  hintText: 'Add an investigation observation, registrar IP, or action note...',
                 ),
-              ),
-              const SizedBox(width: 10),
-              ElevatedButton.icon(
+                onSubmitted: (_) => _addNote(threat),
+              );
+
+              final addBtn = ElevatedButton.icon(
                 onPressed: () => _addNote(threat),
                 icon: const Icon(Icons.add_comment_rounded, size: 16),
                 label: const Text('Add Note'),
-              ),
-            ],
+              );
+
+              if (isNarrow) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    textField,
+                    const SizedBox(height: 10),
+                    addBtn,
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(child: textField),
+                  const SizedBox(width: 10),
+                  addBtn,
+                ],
+              );
+            },
           ),
           const SizedBox(height: 16),
           if (threat.notes.isEmpty)

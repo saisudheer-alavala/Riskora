@@ -89,12 +89,6 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
-  void _handleQuickDemoLogin() {
-    _loginIdentifierController.text = 'kuretitituskathikeya@gmail.com';
-    _loginPasswordController.text = 'RiskoraLead#2026';
-    _handleLogin();
-  }
-
   void _handleRegister() {
     final name = _regNameController.text.trim();
     final email = _regEmailController.text.trim();
@@ -1162,7 +1156,7 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                result.errorMessage ?? 'Access denied by Riskora identity gateway.',
+                result.errorMessage,
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   color: textMuted,

@@ -879,18 +879,11 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppTheme.coralSunset.withOpacity(0.2),
-                ),
-                child: const Icon(Icons.radar_rounded, color: AppTheme.coralSunset, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Column(
+          // Header with responsive layout
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 560;
+              final titleCol = Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -901,15 +894,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       letterSpacing: 1.1,
                       color: textColor,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     'Real-time simulation connected to active threat crawler nodes',
                     style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
-              ),
-              const Spacer(),
-              Container(
+              );
+
+              final feedsBadge = Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppTheme.mintGreen.withOpacity(0.15),
@@ -923,37 +920,99 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: AppTheme.mintGreen,
                   ),
                 ),
-              ),
-            ],
+              );
+
+              if (isNarrow) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppTheme.coralSunset.withOpacity(0.2),
+                          ),
+                          child: const Icon(Icons.radar_rounded, color: AppTheme.coralSunset, size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(child: titleCol),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    feedsBadge,
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppTheme.coralSunset.withOpacity(0.2),
+                    ),
+                    child: const Icon(Icons.radar_rounded, color: AppTheme.coralSunset, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(child: titleCol),
+                  const SizedBox(width: 12),
+                  feedsBadge,
+                ],
+              );
+            },
           ),
           const SizedBox(height: 20),
           const Divider(),
           const SizedBox(height: 14),
-          _buildSimulationFeedRow(
-            channel: 'INSTAGRAM',
-            handle: '@riskora_official_rewards',
-            infringement: 'Impersonation & Phishing Link',
-            status: 'Delisted & Suspended',
-            statusColor: AppTheme.riskCritical,
-            isDark: isDark,
-          ),
-          const SizedBox(height: 10),
-          _buildSimulationFeedRow(
-            channel: 'GOOGLE PLAY',
-            handle: 'com.riskora.security.fakeapk',
-            infringement: 'Trojanized APK Package Clone',
-            status: 'DMCA Takedown Dispatched',
-            statusColor: AppTheme.coralSunset,
-            isDark: isDark,
-          ),
-          const SizedBox(height: 10),
-          _buildSimulationFeedRow(
-            channel: 'TELEGRAM',
-            handle: 't.me/riskora_crypto_support',
-            infringement: 'Brand Logo Typosquatting',
-            status: 'Evidence Pack Dispatched',
-            statusColor: AppTheme.purpleGlow,
-            isDark: isDark,
+          // Multi-column data table wrapped with horizontal scroll fallback to prevent clipping
+          LayoutBuilder(
+            builder: (context, boxConstraints) {
+              final feedTable = Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildSimulationFeedRow(
+                    channel: 'INSTAGRAM',
+                    handle: '@riskora_official_rewards',
+                    infringement: 'Impersonation & Phishing Link',
+                    status: 'Delisted & Suspended',
+                    statusColor: AppTheme.riskCritical,
+                    isDark: isDark,
+                  ),
+                  const SizedBox(height: 10),
+                  _buildSimulationFeedRow(
+                    channel: 'GOOGLE PLAY',
+                    handle: 'com.riskora.security.fakeapk',
+                    infringement: 'Trojanized APK Package Clone',
+                    status: 'DMCA Takedown Dispatched',
+                    statusColor: AppTheme.coralSunset,
+                    isDark: isDark,
+                  ),
+                  const SizedBox(height: 10),
+                  _buildSimulationFeedRow(
+                    channel: 'TELEGRAM',
+                    handle: 't.me/riskora_crypto_support',
+                    infringement: 'Brand Logo Typosquatting',
+                    status: 'Evidence Pack Dispatched',
+                    statusColor: AppTheme.purpleGlow,
+                    isDark: isDark,
+                  ),
+                ],
+              );
+
+              if (boxConstraints.maxWidth < 560) {
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minWidth: 540),
+                    child: feedTable,
+                  ),
+                );
+              }
+              return feedTable;
+            },
           ),
         ],
       ),
@@ -1006,14 +1065,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     fontWeight: FontWeight.w600,
                     color: textColor,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   infringement,
                   style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
+          const SizedBox(width: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(

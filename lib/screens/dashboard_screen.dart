@@ -32,35 +32,40 @@ class DashboardScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top Header & Actions
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Security Operations Center',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.textPrimary,
-                          letterSpacing: -0.5,
-                        ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 650;
+                final titleColumn = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Security Operations Center',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
+                        letterSpacing: -0.5,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Real-time brand impersonation and digital threat defense matrix',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: AppTheme.textSecondary,
-                        ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Real-time brand impersonation and digital threat defense matrix',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: AppTheme.textSecondary,
                       ),
-                    ],
-                  ),
-                ),
-                Wrap(
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                );
+
+                final actionsWrap = Wrap(
                   spacing: 10,
+                  runSpacing: 10,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     OutlinedButton.icon(
                       onPressed: () => provider.refreshAllData(),
@@ -76,8 +81,29 @@ class DashboardScreen extends StatelessWidget {
                       isLoading: provider.isScanning,
                     ),
                   ],
-                ),
-              ],
+                );
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      titleColumn,
+                      const SizedBox(height: 14),
+                      actionsWrap,
+                    ],
+                  );
+                }
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(child: titleColumn),
+                    const SizedBox(width: 16),
+                    actionsWrap,
+                  ],
+                );
+              },
             ),
 
             const SizedBox(height: 16),

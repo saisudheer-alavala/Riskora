@@ -649,22 +649,24 @@ class AppNavigationShell extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'RISKORA DRP',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
-                          color: AppTheme.textPrimary,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'RISKORA DRP',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                            color: AppTheme.textPrimary,
+                          ),
                         ),
-                      ),
-                      Text(
-                        'Cyber Threat Defense',
-                        style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted),
-                      ),
-                    ],
+                        Text(
+                          'Cyber Threat Defense',
+                          style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

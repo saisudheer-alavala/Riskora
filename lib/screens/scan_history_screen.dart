@@ -100,31 +100,34 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Continuous Scan Audit & History',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.textPrimary,
-                          letterSpacing: -0.5,
-                        ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 650;
+                final titleCol = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Continuous Scan Audit & History',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
+                        letterSpacing: -0.5,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Audit trail of scheduled automated crawls, candidate asset discoveries, and pipeline execution logs.',
-                        style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
-                      ),
-                    ],
-                  ),
-                ),
-                ElevatedButton.icon(
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Audit trail of scheduled automated crawls, candidate asset discoveries, and pipeline execution logs.',
+                      style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                );
+
+                final triggerBtn = ElevatedButton.icon(
                   onPressed: provider.isScanning ? null : () => _triggerScanDialog(provider),
                   icon: provider.isScanning
                       ? const SizedBox(
@@ -134,8 +137,29 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
                         )
                       : const Icon(Icons.radar_rounded, size: 16),
                   label: Text(provider.isScanning ? 'Scan in progress...' : 'Trigger New Scan'),
-                ),
-              ],
+                );
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      titleCol,
+                      const SizedBox(height: 14),
+                      triggerBtn,
+                    ],
+                  );
+                }
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(child: titleCol),
+                    const SizedBox(width: 16),
+                    triggerBtn,
+                  ],
+                );
+              },
             ),
 
             const SizedBox(height: 18),
@@ -175,24 +199,75 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
               ),
 
             // Summary Telemetry Metric Cards
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMetricMiniCard('Total Scans', '${scans.length}', Icons.history_rounded, AppTheme.primaryTeal),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: _buildMetricMiniCard('Candidates Checked', '$totalCandidates', Icons.travel_explore_rounded, AppTheme.riskInfo),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: _buildMetricMiniCard('Flagged Impersonators', '$totalDetections', Icons.warning_amber_rounded, AppTheme.riskHigh),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: _buildMetricMiniCard('Avg Pipeline Speed', '1.8 mins', Icons.speed_rounded, AppTheme.coralSunset),
-                ),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 850;
+                final isMedium = constraints.maxWidth >= 480 && !isWide;
+
+                if (isWide) {
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: _buildMetricMiniCard('Total Scans', '${scans.length}', Icons.history_rounded, AppTheme.primaryTeal),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _buildMetricMiniCard('Candidates Checked', '$totalCandidates', Icons.travel_explore_rounded, AppTheme.riskInfo),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _buildMetricMiniCard('Flagged Impersonators', '$totalDetections', Icons.warning_amber_rounded, AppTheme.riskHigh),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _buildMetricMiniCard('Avg Pipeline Speed', '1.8 mins', Icons.speed_rounded, AppTheme.coralSunset),
+                      ),
+                    ],
+                  );
+                }
+
+                if (isMedium) {
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildMetricMiniCard('Total Scans', '${scans.length}', Icons.history_rounded, AppTheme.primaryTeal),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: _buildMetricMiniCard('Candidates Checked', '$totalCandidates', Icons.travel_explore_rounded, AppTheme.riskInfo),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildMetricMiniCard('Flagged Impersonators', '$totalDetections', Icons.warning_amber_rounded, AppTheme.riskHigh),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: _buildMetricMiniCard('Avg Pipeline Speed', '1.8 mins', Icons.speed_rounded, AppTheme.coralSunset),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                }
+
+                return Column(
+                  children: [
+                    _buildMetricMiniCard('Total Scans', '${scans.length}', Icons.history_rounded, AppTheme.primaryTeal),
+                    const SizedBox(height: 12),
+                    _buildMetricMiniCard('Candidates Checked', '$totalCandidates', Icons.travel_explore_rounded, AppTheme.riskInfo),
+                    const SizedBox(height: 12),
+                    _buildMetricMiniCard('Flagged Impersonators', '$totalDetections', Icons.warning_amber_rounded, AppTheme.riskHigh),
+                    const SizedBox(height: 12),
+                    _buildMetricMiniCard('Avg Pipeline Speed', '1.8 mins', Icons.speed_rounded, AppTheme.coralSunset),
+                  ],
+                );
+              },
             ),
 
             const SizedBox(height: 22),
@@ -205,36 +280,39 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppTheme.border),
               ),
-              child: Row(
-                children: [
-                  Text('Status:', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
-                  const SizedBox(width: 8),
-                  ...['All', 'completed', 'failed'].map((st) {
-                    final isSel = _selectedStatus.toLowerCase() == st.toLowerCase();
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 6),
-                      child: ChoiceChip(
-                        label: Text(st == 'All' ? 'All' : st[0].toUpperCase() + st.substring(1)),
-                        selected: isSel,
-                        onSelected: (_) => setState(() => _selectedStatus = st),
-                      ),
-                    );
-                  }),
-                  const Spacer(),
-                  Text('Source:', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
-                  const SizedBox(width: 8),
-                  ...['All', 'Social', 'App', 'Dark Web'].map((src) {
-                    final isSel = _selectedSource == src;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 6),
-                      child: ChoiceChip(
-                        label: Text(src),
-                        selected: isSel,
-                        onSelected: (_) => setState(() => _selectedSource = src),
-                      ),
-                    );
-                  }),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    Text('Status:', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
+                    const SizedBox(width: 8),
+                    ...['All', 'completed', 'failed'].map((st) {
+                      final isSel = _selectedStatus.toLowerCase() == st.toLowerCase();
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: ChoiceChip(
+                          label: Text(st == 'All' ? 'All' : st[0].toUpperCase() + st.substring(1)),
+                          selected: isSel,
+                          onSelected: (_) => setState(() => _selectedStatus = st),
+                        ),
+                      );
+                    }),
+                    const SizedBox(width: 24),
+                    Text('Source:', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
+                    const SizedBox(width: 8),
+                    ...['All', 'Social', 'App', 'Dark Web'].map((src) {
+                      final isSel = _selectedSource == src;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: ChoiceChip(
+                          label: Text(src),
+                          selected: isSel,
+                          onSelected: (_) => setState(() => _selectedSource = src),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
               ),
             ),
 

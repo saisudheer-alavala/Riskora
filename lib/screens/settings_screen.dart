@@ -137,42 +137,68 @@ class _SettingsScreenState extends State<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'System Configuration & API Settings',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.textPrimary,
-                          letterSpacing: -0.5,
-                        ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 680;
+                final titleColumn = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'System Configuration & API Settings',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
+                        letterSpacing: -0.5,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Configure Python FastAPI backend endpoint, crawl sensitivity, and notification protocols.',
-                        style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
-                      ),
-                    ],
-                  ),
-                ),
-                Row(
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Configure Python FastAPI backend endpoint, crawl sensitivity, and notification protocols.',
+                      style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                );
+
+                final statusAndSave = Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     _buildStatusPill(connStatus),
-                    const SizedBox(width: 10),
                     ElevatedButton.icon(
                       onPressed: _saveAllSettings,
                       icon: const Icon(Icons.check_circle_rounded, size: 16),
                       label: const Text('Save Settings'),
                     ),
                   ],
-                ),
-              ],
+                );
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      titleColumn,
+                      const SizedBox(height: 14),
+                      statusAndSave,
+                    ],
+                  );
+                }
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(child: titleColumn),
+                    const SizedBox(width: 16),
+                    statusAndSave,
+                  ],
+                );
+              },
             ),
 
             const SizedBox(height: 22),
@@ -182,28 +208,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: 'Visual Appearance & Theme Mode',
               subtitle: 'Select between deep cyber-stealth dark mode or clean high-contrast light mode',
               icon: Icons.palette_outlined,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildThemeOptionCard(
-                      title: 'Dark Stealth Mode',
-                      description: 'Deep obsidian canvas with anti-glare cyber styling.',
-                      icon: Icons.dark_mode_rounded,
-                      isSelected: provider.isDarkMode,
-                      onTap: () => provider.setThemeMode(ThemeMode.dark),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: _buildThemeOptionCard(
-                      title: 'Light Enterprise Mode',
-                      description: 'Clean crisp daylight theme with high-contrast surfaces.',
-                      icon: Icons.light_mode_rounded,
-                      isSelected: !provider.isDarkMode,
-                      onTap: () => provider.setThemeMode(ThemeMode.light),
-                    ),
-                  ),
-                ],
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isNarrow = constraints.maxWidth < 580;
+                  final darkCard = _buildThemeOptionCard(
+                    title: 'Dark Stealth Mode',
+                    description: 'Deep obsidian canvas with anti-glare cyber styling.',
+                    icon: Icons.dark_mode_rounded,
+                    isSelected: provider.isDarkMode,
+                    onTap: () => provider.setThemeMode(ThemeMode.dark),
+                  );
+
+                  final lightCard = _buildThemeOptionCard(
+                    title: 'Light Enterprise Mode',
+                    description: 'Clean crisp daylight theme with high-contrast surfaces.',
+                    icon: Icons.light_mode_rounded,
+                    isSelected: !provider.isDarkMode,
+                    onTap: () => provider.setThemeMode(ThemeMode.light),
+                  );
+
+                  if (isNarrow) {
+                    return Column(
+                      children: [
+                        darkCard,
+                        const SizedBox(height: 12),
+                        lightCard,
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    children: [
+                      Expanded(child: darkCard),
+                      const SizedBox(width: 14),
+                      Expanded(child: lightCard),
+                    ],
+                  );
+                },
               ),
             ),
 
@@ -424,7 +465,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 24),
 
             // Section 5: Save & Reset Action Controls
-            Row(
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 ElevatedButton.icon(
                   onPressed: _saveAllSettings,
@@ -434,7 +478,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: const Icon(Icons.check_circle_rounded, size: 18),
                   label: const Text('Save & Apply Settings'),
                 ),
-                const SizedBox(width: 14),
                 OutlinedButton.icon(
                   onPressed: _resetDefaults,
                   style: OutlinedButton.styleFrom(
@@ -443,7 +486,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: const Icon(Icons.restore_rounded, size: 18),
                   label: const Text('Reset Defaults'),
                 ),
-                const SizedBox(width: 14),
                 TextButton.icon(
                   onPressed: () {
                     provider.refreshAllData();
@@ -557,18 +599,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Icon(icon, color: AppTheme.primaryTeal, size: 20),
               const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
-                  ),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted),
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                    ),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

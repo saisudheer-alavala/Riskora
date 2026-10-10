@@ -176,31 +176,30 @@ class _SocialMonitoringScreenState extends State<SocialMonitoringScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Social Media Brand Monitoring',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.textPrimary,
-                          letterSpacing: -0.5,
-                        ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 600;
+                final titleCol = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Social Media Brand Monitoring',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: isNarrow ? 20 : 24,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
+                        letterSpacing: -0.5,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Automated detection of impersonation handles, scam accounts, and fraudulent social profiles.',
-                        style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Automated detection of impersonation handles, scam accounts, and fraudulent social profiles.',
+                      style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
+                    ),
+                  ],
+                );
+
+                final badge = Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: AppTheme.surfaceElevated,
@@ -208,6 +207,7 @@ class _SocialMonitoringScreenState extends State<SocialMonitoringScreen> {
                     border: Border.all(color: AppTheme.border),
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.radar_rounded, size: 16, color: AppTheme.primaryTeal),
                       const SizedBox(width: 8),
@@ -221,8 +221,28 @@ class _SocialMonitoringScreenState extends State<SocialMonitoringScreen> {
                       ),
                     ],
                   ),
-                ),
-              ],
+                );
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      titleCol,
+                      const SizedBox(height: 12),
+                      badge,
+                    ],
+                  );
+                }
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(child: titleCol),
+                    const SizedBox(width: 16),
+                    badge,
+                  ],
+                );
+              },
             ),
 
             const SizedBox(height: 22),
@@ -237,28 +257,25 @@ class _SocialMonitoringScreenState extends State<SocialMonitoringScreen> {
               ),
               child: Column(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 5,
-                        child: TextField(
-                          style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 13),
-                          decoration: InputDecoration(
-                            hintText: 'Search by handle, profile name, or threat keyword...',
-                            prefixIcon: Icon(Icons.search_rounded, size: 20, color: AppTheme.textMuted),
-                            suffixIcon: _searchQuery.isNotEmpty
-                                ? IconButton(
-                                    icon: const Icon(Icons.clear_rounded, size: 18),
-                                    onPressed: () => setState(() => _searchQuery = ''),
-                                  )
-                                : null,
-                          ),
-                          onChanged: (val) => setState(() => _searchQuery = val),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isNarrow = constraints.maxWidth < 560;
+                      final searchField = TextField(
+                        style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 13),
+                        decoration: InputDecoration(
+                          hintText: 'Search by handle, profile name, or threat keyword...',
+                          prefixIcon: Icon(Icons.search_rounded, size: 20, color: AppTheme.textMuted),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear_rounded, size: 18),
+                                  onPressed: () => setState(() => _searchQuery = ''),
+                                )
+                              : null,
                         ),
-                      ),
-                      const SizedBox(width: 14),
-                      // Sort Dropdown
-                      Container(
+                        onChanged: (val) => setState(() => _searchQuery = val),
+                      );
+
+                      final sortDropdown = Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
                           color: AppTheme.surfaceElevated,
@@ -282,48 +299,63 @@ class _SocialMonitoringScreenState extends State<SocialMonitoringScreen> {
                             },
                           ),
                         ),
-                      ),
-                    ],
+                      );
+
+                      if (isNarrow) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            searchField,
+                            const SizedBox(height: 12),
+                            Align(alignment: Alignment.centerLeft, child: sortDropdown),
+                          ],
+                        );
+                      }
+
+                      return Row(
+                        children: [
+                          Expanded(child: searchField),
+                          const SizedBox(width: 14),
+                          sortDropdown,
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 12),
                   // Filter Chips row: Platform & Risk
-                  Row(
-                    children: [
-                      Text('Platform:', style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: ['All', 'Twitter', 'Telegram', 'Instagram', 'LinkedIn'].map((p) {
-                              final isSel = _selectedPlatform == p;
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 6),
-                                child: ChoiceChip(
-                                  label: Text(p),
-                                  selected: isSel,
-                                  onSelected: (_) => setState(() => _selectedPlatform = p),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text('Risk:', style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted)),
-                      const SizedBox(width: 8),
-                      ...['All', 'Critical', 'High', 'Medium', 'Low'].map((r) {
-                        final isSel = _selectedRiskLevel == r;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 6),
-                          child: ChoiceChip(
-                            label: Text(r),
-                            selected: isSel,
-                            onSelected: (_) => setState(() => _selectedRiskLevel = r),
-                          ),
-                        );
-                      }),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        Text('Platform:', style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted)),
+                        const SizedBox(width: 8),
+                        ...['All', 'Twitter', 'Telegram', 'Instagram', 'LinkedIn'].map((p) {
+                          final isSel = _selectedPlatform == p;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: ChoiceChip(
+                              label: Text(p),
+                              selected: isSel,
+                              onSelected: (_) => setState(() => _selectedPlatform = p),
+                            ),
+                          );
+                        }),
+                        const SizedBox(width: 16),
+                        Text('Risk:', style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted)),
+                        const SizedBox(width: 8),
+                        ...['All', 'Critical', 'High', 'Medium', 'Low'].map((r) {
+                          final isSel = _selectedRiskLevel == r;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: ChoiceChip(
+                              label: Text(r),
+                              selected: isSel,
+                              onSelected: (_) => setState(() => _selectedRiskLevel = r),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
                   ),
                 ],
               ),

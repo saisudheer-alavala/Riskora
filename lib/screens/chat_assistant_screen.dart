@@ -135,45 +135,51 @@ class _ChatAssistantScreenState extends State<ChatAssistantScreen> {
             ],
           ),
           const SizedBox(height: 14),
-          ...ChatMode.values.map((mode) {
-            final isSelected = provider.currentChatMode == mode;
-            return Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              decoration: BoxDecoration(
-                color: isSelected ? AppTheme.primaryTeal.withOpacity(0.12) : AppTheme.surfaceElevated,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: isSelected ? AppTheme.primaryTeal.withOpacity(0.5) : AppTheme.border,
-                ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: ChatMode.values.map((mode) {
+                  final isSelected = provider.currentChatMode == mode;
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppTheme.primaryTeal.withOpacity(0.12) : AppTheme.surfaceElevated,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isSelected ? AppTheme.primaryTeal.withOpacity(0.5) : AppTheme.border,
+                      ),
+                    ),
+                    child: ListTile(
+                      dense: true,
+                      onTap: () => provider.setChatMode(mode),
+                      leading: Icon(
+                        mode == ChatMode.brandAssistant
+                            ? Icons.domain_rounded
+                            : (mode == ChatMode.riskAdvisor ? Icons.security_rounded : Icons.support_agent_rounded),
+                        color: isSelected ? AppTheme.primaryTeal : AppTheme.textSecondary,
+                        size: 20,
+                      ),
+                      title: Text(
+                        mode.displayName,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected ? AppTheme.textPrimary : AppTheme.textSecondary,
+                        ),
+                      ),
+                      subtitle: Text(
+                        mode.description,
+                        style: GoogleFonts.inter(fontSize: 10, color: AppTheme.textMuted),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
-              child: ListTile(
-                dense: true,
-                onTap: () => provider.setChatMode(mode),
-                leading: Icon(
-                  mode == ChatMode.brandAssistant
-                      ? Icons.domain_rounded
-                      : (mode == ChatMode.riskAdvisor ? Icons.security_rounded : Icons.support_agent_rounded),
-                  color: isSelected ? AppTheme.primaryTeal : AppTheme.textSecondary,
-                  size: 20,
-                ),
-                title: Text(
-                  mode.displayName,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected ? AppTheme.textPrimary : AppTheme.textSecondary,
-                  ),
-                ),
-                subtitle: Text(
-                  mode.description,
-                  style: GoogleFonts.inter(fontSize: 10, color: AppTheme.textMuted),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            );
-          }),
-          const Spacer(),
+            ),
+          ),
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -201,78 +207,125 @@ class _ChatAssistantScreenState extends State<ChatAssistantScreen> {
 
   Widget _buildTopHeader(AppStateProvider provider, ChatMode mode, bool isWide) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
         color: AppTheme.surface,
         border: Border(bottom: BorderSide(color: AppTheme.border)),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              gradient: AppTheme.redPointsGradient,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 20),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 620;
+
+          final titleContent = Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: AppTheme.redPointsGradient,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'RISKORA Threat Intelligence Assistant',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppTheme.coralSunset.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'FastAPI Ready',
-                        style: GoogleFonts.jetBrainsMono(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.coralSunset,
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          'RISKORA Threat Intelligence Assistant',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textPrimary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppTheme.coralSunset.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'FastAPI Ready',
+                            style: GoogleFonts.jetBrainsMono(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.coralSunset,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Mode: ${mode.displayName} • ${mode.description}',
+                      style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
-                Text(
-                  'Mode: ${mode.displayName} • ${mode.description}',
-                  style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary),
-                ),
-              ],
-            ),
-          ),
-          if (!isWide)
-            DropdownButtonHideUnderline(
-              child: DropdownButton<ChatMode>(
-                value: mode,
-                dropdownColor: AppTheme.surfaceElevated,
-                items: ChatMode.values.map((m) {
-                  return DropdownMenuItem(
-                    value: m,
-                    child: Text(m.displayName, style: GoogleFonts.inter(fontSize: 12)),
-                  );
-                }).toList(),
-                onChanged: (m) {
-                  if (m != null) provider.setChatMode(m);
-                },
               ),
-            ),
-        ],
+            ],
+          );
+
+          final dropdownWidget = !isWide
+              ? Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceElevated,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppTheme.borderSubtle),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<ChatMode>(
+                      value: mode,
+                      isDense: true,
+                      dropdownColor: AppTheme.surfaceElevated,
+                      items: ChatMode.values.map((m) {
+                        return DropdownMenuItem(
+                          value: m,
+                          child: Text(m.displayName, style: GoogleFonts.inter(fontSize: 12)),
+                        );
+                      }).toList(),
+                      onChanged: (m) {
+                        if (m != null) provider.setChatMode(m);
+                      },
+                    ),
+                  ),
+                )
+              : null;
+
+          if (isNarrow && dropdownWidget != null) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                titleContent,
+                const SizedBox(height: 10),
+                dropdownWidget,
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              Expanded(child: titleContent),
+              if (dropdownWidget != null) ...[
+                const SizedBox(width: 12),
+                dropdownWidget,
+              ],
+            ],
+          );
+        },
       ),
     );
   }
