@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'providers/app_state_provider.dart';
 import 'theme/app_theme.dart';
 import 'widgets/app_navigation.dart';
+import 'widgets/intro_splash_screen.dart';
 
 import 'screens/dashboard_screen.dart';
 import 'screens/brand_profile_screen.dart';
@@ -19,11 +20,13 @@ import 'screens/home_screen.dart';
 class RiskoraApp extends StatelessWidget {
   final bool startAuthenticated;
   final bool startOnAuthScreen;
+  final bool enableIntro;
 
   const RiskoraApp({
     super.key,
     this.startAuthenticated = false,
     this.startOnAuthScreen = false,
+    this.enableIntro = true,
   });
 
   @override
@@ -45,7 +48,7 @@ class RiskoraApp extends StatelessWidget {
             themeMode: provider.themeMode,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
-            home: const AppRootShell(),
+            home: AppRootShell(enableIntro: enableIntro),
           );
         },
       ),
@@ -53,9 +56,15 @@ class RiskoraApp extends StatelessWidget {
   }
 }
 
-class AppRootShell extends StatelessWidget {
-  const AppRootShell({super.key});
+class AppRootShell extends StatefulWidget {
+  final bool enableIntro;
+  const AppRootShell({super.key, this.enableIntro = true});
 
+  @override
+  State<AppRootShell> createState() => _AppRootShellState();
+}
+
+class _AppRootShellState extends State<AppRootShell> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppStateProvider>();
@@ -63,6 +72,11 @@ class AppRootShell extends StatelessWidget {
     if (!provider.isAuthenticated) {
       if (provider.showAuthScreen) {
         return const AuthScreen();
+      }
+      if (widget.enableIntro) {
+        return const IntroVideoSplashScreen(
+          nextScreen: HomeScreen(),
+        );
       }
       return const HomeScreen();
     }

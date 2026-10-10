@@ -11,7 +11,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     // 1. Build Riskora App: Opens to Home landing screen
-    await tester.pumpWidget(const RiskoraApp());
+    await tester.pumpWidget(const RiskoraApp(enableIntro: false));
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
 
