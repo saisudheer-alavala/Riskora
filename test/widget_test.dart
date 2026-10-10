@@ -29,12 +29,14 @@ void main() {
 
     // Verify Login page components
     expect(find.text('Sign In to Security Operations Center'), findsOneWidget);
-    expect(find.text('Phone Number or Email'), findsOneWidget);
+    expect(find.text('Corporate Email or Identity'), findsOneWidget);
     expect(find.text('Forgot Password?'), findsOneWidget);
     expect(find.text('Register Now'), findsOneWidget);
 
-    // 3. Authenticate into dashboard via demo login
-    await tester.tap(find.text('Quick Demo Login (admin@riskora.ai)'));
+    // 3. Authenticate into dashboard via quick evaluator chip
+    await tester.tap(find.text('Project Lead (Verified)'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('Sign In to SecOps Matrix'));
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pump(const Duration(milliseconds: 400));
 

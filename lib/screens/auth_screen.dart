@@ -6,7 +6,7 @@ import '../providers/app_state_provider.dart';
 import '../models/user_account.dart';
 import '../theme/app_theme.dart';
 import '../widgets/animated_gradient_button.dart';
-import '../widgets/red_points_background.dart';
+import '../widgets/video_background/video_bg.dart';
 
 /// Red Points cybersecurity authentication portal with Login, Register,
 /// and Forgot Password flows adhering strictly to Red Points aesthetics.
@@ -286,65 +286,103 @@ class _AuthScreenState extends State<AuthScreen> {
     final cardBg = isDark ? AppTheme.surface : AppTheme.lightSurface;
     final cardBorder = isDark ? AppTheme.border : AppTheme.lightBorder;
 
-    return RedPointsBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: cardBg.withOpacity(isDark ? 0.94 : 0.97),
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: cardBorder, width: 1.2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.purpleElectric.withOpacity(isDark ? 0.20 : 0.08),
-                      blurRadius: 36,
-                      offset: const Offset(0, 10),
-                    ),
-                    if (isDark) ...AppTheme.cardShadow else ...AppTheme.lightCardShadow,
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Brand Logo & Title Header with Theme Toggle Button
-                    _buildBrandHeader(isDark),
+    return Scaffold(
+      backgroundColor: const Color(0xFF0D0C15),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1. Fullscreen Motion Video Background (Requested by user)
+          const Positioned.fill(
+            child: VideoBackgroundWidget(tag: 'auth'),
+          ),
 
-                    const SizedBox(height: 28),
-
-                    // Animated Switcher between Login and Register widgets
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 280),
-                      transitionBuilder: (child, animation) {
-                        return FadeTransition(
-                          opacity: animation,
-                          child: SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(0.04, 0),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: _isRegisterMode
-                          ? _buildRegisterForm(isDark)
-                          : _buildLoginForm(isDark),
-                    ),
+          // 2. High-Tech Cyber Command Center Gradient Overlay
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.center,
+                  radius: 1.15,
+                  colors: [
+                    (isDark ? const Color(0xFF0D0C15) : Colors.white).withOpacity(isDark ? 0.76 : 0.88),
+                    (isDark ? const Color(0xFF07060A) : const Color(0xFFE2E8F0)).withOpacity(isDark ? 0.92 : 0.96),
                   ],
                 ),
               ),
             ),
           ),
-        ),
+
+          // 3. Red Points Top Accent Gradient Line
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 2.5,
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: AppTheme.redPointsGradient,
+              ),
+            ),
+          ),
+
+          // 4. Central Authentication Form with Frosted Card
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: cardBg.withOpacity(isDark ? 0.94 : 0.97),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(color: cardBorder, width: 1.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.purpleElectric.withOpacity(isDark ? 0.20 : 0.08),
+                        blurRadius: 36,
+                        offset: const Offset(0, 10),
+                      ),
+                      if (isDark) ...AppTheme.cardShadow else ...AppTheme.lightCardShadow,
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Brand Logo & Title Header with Theme Toggle Button
+                      _buildBrandHeader(isDark),
+
+                      const SizedBox(height: 28),
+
+                      // Animated Switcher between Login and Register widgets
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 280),
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0.04, 0),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: _isRegisterMode
+                            ? _buildRegisterForm(isDark)
+                            : _buildLoginForm(isDark),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

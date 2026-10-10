@@ -1005,8 +1005,8 @@ class _HomeScreenState extends State<HomeScreen> {
               if (boxConstraints.maxWidth < 560) {
                 return SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(minWidth: 540),
+                  child: SizedBox(
+                    width: 560,
                     child: feedTable,
                   ),
                 );

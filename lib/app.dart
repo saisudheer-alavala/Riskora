@@ -26,7 +26,7 @@ class RiskoraApp extends StatelessWidget {
     super.key,
     this.startAuthenticated = false,
     this.startOnAuthScreen = false,
-    this.enableIntro = false,
+    this.enableIntro = true,
   });
 
   @override

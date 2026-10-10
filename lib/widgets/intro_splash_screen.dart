@@ -24,18 +24,19 @@ class IntroVideoSplashScreen extends StatefulWidget {
 class _IntroVideoSplashScreenState extends State<IntroVideoSplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
+  late Animation<double> _curtainAnimation;
   Timer? _timer;
   bool _isTransitioning = false;
+  bool _introFinished = false;
 
   @override
   void initState() {
     super.initState();
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 650),
+      duration: const Duration(milliseconds: 500),
     );
-    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+    _curtainAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
 
@@ -48,7 +49,9 @@ class _IntroVideoSplashScreenState extends State<IntroVideoSplashScreen>
     _timer?.cancel();
     _fadeController.forward().then((_) {
       if (mounted) {
-        setState(() {});
+        setState(() {
+          _introFinished = true;
+        });
       }
     });
   }
@@ -62,27 +65,19 @@ class _IntroVideoSplashScreenState extends State<IntroVideoSplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    if (_fadeController.isCompleted) {
+    if (_introFinished) {
       return widget.nextScreen;
     }
 
-    return Stack(
-      children: [
-        // The normal next screen rendered underneath
-        widget.nextScreen,
-
-        // The Intro Video Splash Overlay (Starting ala vachi, fade out aipoyi vellipotundi)
-        FadeTransition(
-          opacity: _fadeAnimation,
-          child: Scaffold(
-            backgroundColor: const Color(0xFF0D0C15),
-            body: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Branded Full-Screen Animated Video
-                const Positioned.fill(
-                  child: VideoBackgroundWidget(),
-                ),
+    return Scaffold(
+      backgroundColor: const Color(0xFF0D0C15),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Branded Full-Screen Animated Video (Never inside FadeTransition)
+          const Positioned.fill(
+            child: VideoBackgroundWidget(tag: 'intro'),
+          ),
 
                 // Top Vignette
                 Positioned(
@@ -208,32 +203,39 @@ class _IntroVideoSplashScreenState extends State<IntroVideoSplashScreen>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: AppTheme.coralSunset,
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppTheme.coralSunset,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'INITIALIZING RISKORA DEFENSE MATRIX...',
-                                style: GoogleFonts.jetBrainsMono(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.1,
-                                  color: Colors.white,
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'INITIALIZING RISKORA DEFENSE MATRIX...',
+                                    style: GoogleFonts.jetBrainsMono(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 1.1,
+                                      color: Colors.white,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 10),
                           Text(
                             'SEC-OPS AI // v2.4',
                             style: GoogleFonts.jetBrainsMono(
-                              fontSize: 11,
+                              fontSize: 10,
                               color: Colors.white70,
                             ),
                           ),
@@ -251,11 +253,17 @@ class _IntroVideoSplashScreenState extends State<IntroVideoSplashScreen>
                     ],
                   ),
                 ),
+
+                // Smooth curtain transition when exiting intro
+                if (_isTransitioning)
+                  Positioned.fill(
+                    child: FadeTransition(
+                      opacity: _curtainAnimation,
+                      child: Container(color: const Color(0xFF0D0C15)),
+                    ),
+                  ),
               ],
             ),
-          ),
-        ),
-      ],
-    );
+          );
   }
 }
