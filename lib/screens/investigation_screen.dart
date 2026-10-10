@@ -242,10 +242,11 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isNarrow = constraints.maxWidth < 620;
+
+                      final iconBox = Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: AppTheme.surfaceElevated,
@@ -259,67 +260,96 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
                           color: AppTheme.primaryTeal,
                           size: 26,
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
+                      );
+
+                      final metaTags = Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            threat.id,
+                            style: GoogleFonts.jetBrainsMono(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textMuted,
+                            ),
+                          ),
+                          StatusBadge(status: threat.reviewStatus),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceElevated,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              threat.platform,
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.primaryTeal,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+
+                      final textDetails = Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          metaTags,
+                          const SizedBox(height: 6),
+                          Text(
+                            threat.title,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          SelectableText(
+                            threat.identifier,
+                            style: GoogleFonts.jetBrainsMono(fontSize: 13, color: AppTheme.primaryTeal),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'First detected: ${dateFormat.format(threat.detectedAt)} • Publisher: ${threat.developerOrAuthor}',
+                            style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted),
+                          ),
+                        ],
+                      );
+
+                      final riskBadge = RiskBadge(score: threat.riskScore);
+
+                      if (isNarrow) {
+                        return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  threat.id,
-                                  style: GoogleFonts.jetBrainsMono(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppTheme.textMuted,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                StatusBadge(status: threat.reviewStatus),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.surfaceElevated,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    threat.platform,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppTheme.primaryTeal,
-                                    ),
-                                  ),
-                                ),
+                                iconBox,
+                                riskBadge,
                               ],
                             ),
-                            const SizedBox(height: 6),
-                            Text(
-                              threat.title,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: AppTheme.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            SelectableText(
-                              threat.identifier,
-                              style: GoogleFonts.jetBrainsMono(fontSize: 13, color: AppTheme.primaryTeal),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'First detected: ${dateFormat.format(threat.detectedAt)} • Publisher: ${threat.developerOrAuthor}',
-                              style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted),
-                            ),
+                            const SizedBox(height: 14),
+                            textDetails,
                           ],
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      RiskBadge(score: threat.riskScore),
-                    ],
+                        );
+                      }
+
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          iconBox,
+                          const SizedBox(width: 16),
+                          Expanded(child: textDetails),
+                          const SizedBox(width: 16),
+                          riskBadge,
+                        ],
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 18),
@@ -451,10 +481,15 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Risk Score Decomposition',
-                style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700),
+              Expanded(
+                child: Text(
+                  'Risk Score Decomposition',
+                  style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(width: 8),
               Text(
                 'Composite: ${threat.riskScore}/100',
                 style: GoogleFonts.jetBrainsMono(
@@ -487,7 +522,15 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary)),
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
             Text('${value.toStringAsFixed(1)}%', style: GoogleFonts.jetBrainsMono(fontSize: 11, color: AppTheme.textPrimary)),
           ],
         ),

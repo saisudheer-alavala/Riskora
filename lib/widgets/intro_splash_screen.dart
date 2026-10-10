@@ -147,8 +147,55 @@ class _IntroVideoSplashScreenState extends State<IntroVideoSplashScreen>
                   ),
                 ),
 
-                // Ambient Vignette Center (The newly branded video features the official cyan Riskora emblem directly)
-                const SizedBox.shrink(),
+                // Center Branding Shield
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF00E5FF).withOpacity(0.4),
+                              blurRadius: 30,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.asset(
+                            'assets/images/riskora_emblem.png',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        'RISKORA',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 2.0,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'DIGITAL RISK PROTECTION PLATFORM',
+                        style: GoogleFonts.jetBrainsMono(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.5,
+                          color: const Color(0xFF00E5FF),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
                 // Bottom Telemetry Loading Indicator
                 Positioned(

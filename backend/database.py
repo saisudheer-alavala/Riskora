@@ -335,3 +335,38 @@ def seed_demo_account(cursor):
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, lead_threats)
 
+    # Seed remaining demo evaluator accounts if not exist
+    other_accounts = [
+        ("usr_analyst_001", "Senior SecOps Analyst", "analyst@riskora.ai", "1994-05-12", "RiskoraSecOps#2026"),
+        ("usr_admin_002", "Platform Administrator", "admin@riskora.com", "1990-08-20", "Admin@Riskora2026!"),
+        ("usr_director_001", "Dr. Aaron Sterling", "director@cyberdefense.org", "1985-03-15", "Director@Defense2026"),
+        ("usr_saisudheer_001", "Sai Sudheer", "saisudheer@riskora.ai", "2002-01-01", "Riskora#2026"),
+    ]
+    for uid, name, email, dob, pw in other_accounts:
+        cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
+        if not cursor.fetchone():
+            cursor.execute("""
+            INSERT INTO users (id, name, email, dob, password_hash, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """, (uid, name, email, dob, hash_password(pw), datetime.now().isoformat()))
+            cursor.execute("""
+            INSERT OR IGNORE INTO brand_profiles (
+                user_id, brand_name, official_website, industry, description,
+                logo_url, social_handles, mobile_apps, package_names, publishers,
+                trusted_domains, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                uid,
+                "Riskora SecOps Global",
+                "https://riskora.ai",
+                "Cyber Defense & AI Security",
+                "Autonomous digital risk protection and anti-impersonation intelligence.",
+                "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&q=80",
+                json.dumps(["@riskora_ai", "@riskora_secops"]),
+                json.dumps(["Riskora Sentinel Mobile"]),
+                json.dumps(["ai.riskora.sentinel"]),
+                json.dumps(["Riskora Cyber Defense LLC"]),
+                json.dumps(["riskora.ai", "auth.riskora.ai"]),
+                datetime.now().isoformat()
+            ))
+

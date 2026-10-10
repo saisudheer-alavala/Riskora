@@ -158,6 +158,8 @@ class AppStateProvider extends ChangeNotifier {
     if (_threats.isNotEmpty) {
       _selectedThreat = _threats.first;
     }
+    // Proactively check FastAPI backend connection
+    testBackendConnection();
   }
 
   void openAuthScreen() {
@@ -170,7 +172,93 @@ class AppStateProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Strict Verified Login with anti-fake email protection
+  /// Strict Verified Login with anti-fake email protection (Asynchronous with backend query)
+  Future<AuthResult> verifyAndLoginAsync(String identifier, String password) async {
+    final cleanId = identifier.trim().toLowerCase();
+    final cleanPass = password.trim();
+
+    if (cleanId.isEmpty || cleanPass.isEmpty) {
+      return AuthResult.fail(
+        AuthResultCode.userNotFound,
+        'Please provide both corporate identity and access credentials.',
+      );
+    }
+
+    // Check disposable email blacklist
+    if (cleanId.contains('@')) {
+      final domain = cleanId.split('@').last;
+      if (_disposableDomains.contains(domain)) {
+        return AuthResult.fail(
+          AuthResultCode.disposableEmailRejected,
+          'Security Block: Temporary and disposable email domains ($domain) are prohibited.',
+        );
+      }
+    }
+
+    // 1. Check in registered corporate database (local cache)
+    final existingUser = _registeredUsers.firstWhere(
+      (u) => u.email.toLowerCase() == cleanId,
+      orElse: () => UserAccount(name: '', email: '', password: ''),
+    );
+
+    if (existingUser.email.isNotEmpty) {
+      if (existingUser.password != cleanPass) {
+        return AuthResult.fail(
+          AuthResultCode.invalidPassword,
+          'Access Denied: Incorrect password for "${existingUser.email}". Security breach challenge logged.',
+        );
+      }
+
+      // Login successful
+      _isAuthenticated = true;
+      _showAuthScreen = false;
+      _currentUserAccount = existingUser;
+      _currentUserIdentifier = existingUser.email;
+      _currentUserName = existingUser.name;
+      _currentUserDob = existingUser.dob;
+      notifyListeners();
+
+      await _syncLogin(existingUser.email, cleanPass);
+      return AuthResult.ok(existingUser);
+    }
+
+    // 2. Query FastAPI backend directly
+    try {
+      final backendRes = await _apiService.login(cleanId, cleanPass);
+      if (backendRes != null && backendRes['user'] != null) {
+        final userData = backendRes['user'];
+        final backendUser = UserAccount(
+          name: userData['name'] ?? 'SecOps Enterprise User',
+          email: cleanId,
+          password: cleanPass,
+          role: 'SecOps Enterprise Specialist',
+          isVerified: true,
+          authProvider: 'backend',
+        );
+        _registeredUsers.add(backendUser);
+
+        _isAuthenticated = true;
+        _showAuthScreen = false;
+        _currentUserAccount = backendUser;
+        _currentUserIdentifier = backendUser.email;
+        _currentUserName = backendUser.name;
+        _currentUserDob = DateTime(1995, 1, 1);
+        notifyListeners();
+
+        await refreshAllData();
+        return AuthResult.ok(backendUser);
+      }
+    } catch (e) {
+      debugPrint('Backend login exception: $e');
+    }
+
+    return AuthResult.fail(
+      AuthResultCode.userNotFound,
+      'Account Verification Failed: No registered Riskora identity found for "$identifier". Fake or unregistered identities are blocked by corporate SecOps.',
+    );
+  }
+
+  /// Strict Verified Login with anti-fake email protection (Synchronous fallback)
   AuthResult verifyAndLogin(String identifier, String password) {
     final cleanId = identifier.trim().toLowerCase();
     final cleanPass = password.trim();

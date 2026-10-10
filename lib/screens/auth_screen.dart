@@ -47,7 +47,7 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
-  void _handleLogin() {
+  void _handleLogin() async {
     final identifier = _loginIdentifierController.text.trim();
     final password = _loginPasswordController.text;
 
@@ -62,8 +62,9 @@ class _AuthScreenState extends State<AuthScreen> {
 
     setState(() => _loginError = null);
     final provider = context.read<AppStateProvider>();
-    final result = provider.verifyAndLogin(identifier, password);
+    final result = await provider.verifyAndLoginAsync(identifier, password);
 
+    if (!mounted) return;
     if (!result.success) {
       setState(() => _loginError = result.errorMessage);
       _showSecurityAlertModal(result);
