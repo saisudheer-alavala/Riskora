@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: riskora-api
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - DATABASE_PATH=/app/data/riskora.db
+    volumes:
+      - riskora_data:/app/data
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: riskora-web
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  riskora_data:
