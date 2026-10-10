@@ -284,7 +284,9 @@ class _SocialMonitoringScreenState extends State<SocialMonitoringScreen> {
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
-                            value: _sortBy,
+                            value: const ['Highest Risk', 'Lowest Risk', 'Name Similarity', 'Newest'].contains(_sortBy)
+                                ? _sortBy
+                                : 'Highest Risk',
                             dropdownColor: AppTheme.surfaceElevated,
                             style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 12),
                             icon: const Icon(Icons.sort_rounded, size: 18, color: AppTheme.primaryTeal),

@@ -169,6 +169,17 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
                   ],
                 );
 
+                // Deduplicate threats by ID to prevent duplicate DropdownMenuItem assertions
+                final uniqueThreatMap = <String, ThreatItem>{};
+                for (final t in threats) {
+                  uniqueThreatMap[t.id] = t;
+                }
+                final uniqueThreats = uniqueThreatMap.values.toList();
+
+                final currentSelectedId = uniqueThreatMap.containsKey(threat.id)
+                    ? threat.id
+                    : (uniqueThreats.isNotEmpty ? uniqueThreats.first.id : null);
+
                 final threatDropdown = Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
@@ -178,13 +189,13 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
-                      value: threat.id,
+                      value: currentSelectedId,
                       isExpanded: isNarrow,
                       dropdownColor: AppTheme.surfaceElevated,
                       style: GoogleFonts.jetBrainsMono(color: AppTheme.textPrimary, fontSize: 12),
                       icon: const Icon(Icons.arrow_drop_down_rounded, color: AppTheme.primaryTeal),
-                      items: threats.map((t) {
-                        return DropdownMenuItem(
+                      items: uniqueThreats.map((t) {
+                        return DropdownMenuItem<String>(
                           value: t.id,
                           child: Text(
                             '${t.id} - ${t.identifier} (${t.riskScore})',
@@ -193,9 +204,8 @@ class _ThreatInvestigationScreenState extends State<ThreatInvestigationScreen> {
                         );
                       }).toList(),
                       onChanged: (id) {
-                        if (id != null) {
-                          final selected = threats.firstWhere((t) => t.id == id);
-                          provider.selectThreatForInvestigation(selected);
+                        if (id != null && uniqueThreatMap.containsKey(id)) {
+                          provider.selectThreatForInvestigation(uniqueThreatMap[id]!);
                         }
                       },
                     ),

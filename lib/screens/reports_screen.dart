@@ -436,12 +436,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     children: [
                       const Icon(Icons.shield_outlined, color: AppTheme.purpleGlow, size: 20),
                       const SizedBox(width: 10),
-                      Text(
-                        'Autonomous Threat Analysis & Executive Highlights',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textPrimary,
+                      Expanded(
+                        child: Text(
+                          'Autonomous Threat Analysis & Executive Highlights',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textPrimary,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],

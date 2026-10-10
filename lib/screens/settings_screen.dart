@@ -289,13 +289,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Quick Presets
-                  Row(
+                  // Quick Presets with responsive Wrap
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Text('Presets:', style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted)),
-                      const SizedBox(width: 8),
                       _buildPresetChip('http://localhost:8000 (Desktop / Web)', 'http://localhost:8000', provider),
-                      const SizedBox(width: 6),
                       _buildPresetChip('http://10.0.2.2:8000 (Android Emulator)', 'http://10.0.2.2:8000', provider),
                     ],
                   ),
@@ -325,80 +326,93 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: 22),
 
-            // Section 2: Scanning & Sensitivity Parameters
+            // Section 2: Scanning & Sensitivity Parameters (Responsive Layout)
             _buildSettingsCard(
               title: 'Crawl Frequency & Neural Sensitivity',
               subtitle: 'Fine-tune threat detection thresholds to balance false positives and detection velocity',
               icon: Icons.tune_rounded,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isNarrow = constraints.maxWidth < 640;
+
+                  final similarityCol = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Similarity Trigger Threshold',
-                                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                                ),
-                                Text(
-                                  '${_similarityThreshold.toInt()}%',
-                                  style: GoogleFonts.jetBrainsMono(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.primaryTeal),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Candidates with visual logo or phonetic name similarity above this value generate alerts.',
-                              style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted),
-                            ),
-                            Slider(
-                              value: _similarityThreshold,
-                              min: 50,
-                              max: 95,
-                              divisions: 9,
-                              activeColor: AppTheme.primaryTeal,
-                              inactiveColor: AppTheme.surfaceElevated,
-                              onChanged: (val) => setState(() => _similarityThreshold = val),
-                            ),
-                          ],
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Similarity Trigger Threshold',
+                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                          ),
+                          Text(
+                            '${_similarityThreshold.toInt()}%',
+                            style: GoogleFonts.jetBrainsMono(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.primaryTeal),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 24),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Automated Crawl Frequency',
-                              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                            ),
-                            const SizedBox(height: 6),
-                            DropdownButtonFormField<String>(
-                              value: _crawlFrequency,
-                              dropdownColor: AppTheme.surfaceElevated,
-                              decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
-                              items: const [
-                                DropdownMenuItem(value: 'Every 15 Mins', child: Text('Every 15 Minutes (Real-Time)')),
-                                DropdownMenuItem(value: 'Every 1 Hour', child: Text('Every 1 Hour (Standard)')),
-                                DropdownMenuItem(value: 'Every 6 Hours', child: Text('Every 6 Hours (Periodic)')),
-                                DropdownMenuItem(value: 'Daily', child: Text('Daily Summary')),
-                              ],
-                              onChanged: (val) {
-                                if (val != null) setState(() => _crawlFrequency = val);
-                              },
-                            ),
-                          ],
-                        ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Candidates with visual logo or phonetic name similarity above this value generate alerts.',
+                        style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted),
+                      ),
+                      Slider(
+                        value: _similarityThreshold,
+                        min: 50,
+                        max: 95,
+                        divisions: 9,
+                        activeColor: AppTheme.primaryTeal,
+                        inactiveColor: AppTheme.surfaceElevated,
+                        onChanged: (val) => setState(() => _similarityThreshold = val),
                       ),
                     ],
-                  ),
-                ],
+                  );
+
+                  final crawlCol = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Automated Crawl Frequency',
+                        style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                      ),
+                      const SizedBox(height: 6),
+                      DropdownButtonFormField<String>(
+                        value: _crawlFrequency,
+                        dropdownColor: AppTheme.surfaceElevated,
+                        decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
+                        items: const [
+                          DropdownMenuItem(value: 'Every 15 Mins', child: Text('Every 15 Minutes (Real-Time)')),
+                          DropdownMenuItem(value: 'Every 1 Hour', child: Text('Every 1 Hour (Standard)')),
+                          DropdownMenuItem(value: 'Every 6 Hours', child: Text('Every 6 Hours (Periodic)')),
+                          DropdownMenuItem(value: 'Daily', child: Text('Daily Summary')),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) setState(() => _crawlFrequency = val);
+                        },
+                      ),
+                    ],
+                  );
+
+                  if (isNarrow) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        similarityCol,
+                        const SizedBox(height: 20),
+                        crawlCol,
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: similarityCol),
+                      const SizedBox(width: 24),
+                      Expanded(child: crawlCol),
+                    ],
+                  );
+                },
               ),
             ),
 
@@ -428,37 +442,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: (val) => setState(() => _notifyHigh = val ?? true),
                   ),
                 ],
-              ),
-            ),
-
-            const SizedBox(height: 22),
-
-            // Section 4: FastAPI REST API Specifications Documentation
-            _buildSettingsCard(
-              title: 'FastAPI Backend Endpoint Reference',
-              subtitle: 'Pre-configured endpoints prepared for connection with your Python backend service',
-              icon: Icons.code_rounded,
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceElevated,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.borderSubtle),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Centralized REST API routes ready in ApiService & ChatService:', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryTeal)),
-                    const SizedBox(height: 10),
-                    _buildApiRoute('GET', '/api/health', 'Health check ping for backend status indicator'),
-                    _buildApiRoute('GET / PUT', '/api/brand-profile', 'Fetch and update registered brand baseline & identifiers'),
-                    _buildApiRoute('GET', '/api/threats?type={social|app}', 'Query flagged detections filtered by channel'),
-                    _buildApiRoute('POST', '/api/threats/{id}/status', 'Update review status (confirmed / false positive / takedown)'),
-                    _buildApiRoute('POST', '/api/threats/{id}/notes', 'Record timestamped analyst investigation notes'),
-                    _buildApiRoute('POST', '/api/chat', 'Multi-mode LLM endpoint (Brand Assistant, Risk Advisor, Support)'),
-                    _buildApiRoute('POST', '/api/scans/run', 'Trigger multi-channel autonomous crawler scan'),
-                  ],
-                ),
               ),
             ),
 
@@ -584,15 +567,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required IconData icon,
     required Widget child,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.border),
-        boxShadow: AppTheme.cardShadow,
-      ),
-      child: Column(
+    return Material(
+      color: AppTheme.surface,
+      borderRadius: BorderRadius.circular(14),
+      elevation: 0,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.border),
+          boxShadow: AppTheme.cardShadow,
+        ),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -620,39 +606,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child,
         ],
       ),
-    );
-  }
-
-  Widget _buildApiRoute(String method, String path, String desc) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: AppTheme.primaryTeal.withOpacity(0.4)),
-            ),
-            child: Text(
-              method,
-              style: GoogleFonts.jetBrainsMono(fontSize: 9, fontWeight: FontWeight.bold, color: AppTheme.primaryTeal),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(path, style: GoogleFonts.jetBrainsMono(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-                Text(desc, style: GoogleFonts.inter(fontSize: 10, color: AppTheme.textMuted)),
-              ],
-            ),
-          ),
-        ],
-      ),
+    ),
     );
   }
 
