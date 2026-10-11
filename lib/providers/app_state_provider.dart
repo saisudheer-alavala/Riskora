@@ -12,6 +12,12 @@ import '../services/mock_data_service.dart';
 import '../theme/app_theme.dart';
 
 String getDefaultBackendUrl() {
+  if (kIsWeb) {
+    final origin = Uri.base.origin;
+    if (origin.isNotEmpty && !origin.startsWith('file://')) {
+      return origin;
+    }
+  }
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     return 'http://10.0.2.2:8000';
   }
