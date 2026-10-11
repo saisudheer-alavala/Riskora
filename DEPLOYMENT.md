@@ -45,7 +45,29 @@ Render can build and run both the **Flutter Web frontend** and **FastAPI backend
 
 ---
 
-## 🔥 Option 3: Firebase Hosting (Frontend Only)
+## ▲ Option 3: Vercel (Fastest Frontend Web Deployment)
+
+Since the production-ready Flutter Web build is pre-compiled in `web_dist/` and configured via `vercel.json`, you can deploy to Vercel in less than 30 seconds:
+
+### Method A: Through Vercel Web Dashboard (1-Click)
+1. Go to [https://vercel.com/](https://vercel.com/) and sign in with GitHub.
+2. Click **Add New...** -> **Project**.
+3. Import your GitHub repository: `saisudheer-alavala/Riskora`.
+4. In **Project Configuration**:
+   - Framework Preset: **Other**
+   - Output Directory: `web_dist` (automatically detected from `vercel.json`)
+5. Click **Deploy**.
+6. Your Flutter Web app goes live instantly at `https://riskora-*.vercel.app`!
+
+### Method B: Through Vercel CLI
+```bash
+npm install -g vercel
+vercel --prod
+```
+
+---
+
+## 🔥 Option 4: Firebase Hosting (Frontend Only)
 
 Firebase CLI (`15.10.1`) is already installed on your system. To deploy the frontend to Firebase Hosting:
 
