@@ -646,6 +646,9 @@ def handle_chat_message(req: ChatMessageRequest):
 try:
     from fastapi.staticfiles import StaticFiles
     possible_web_dirs = [
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), "web_dist"),
+        os.path.join(os.getcwd(), "web_dist"),
+        os.path.join(os.path.dirname(__file__), "web_dist"),
         os.path.join(os.path.dirname(os.path.dirname(__file__)), "build", "web"),
         os.path.join(os.path.dirname(__file__), "web_build"),
         os.path.join(os.getcwd(), "build", "web"),
