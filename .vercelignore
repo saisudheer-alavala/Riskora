@@ -8,7 +8,6 @@ macos/
 .git/
 venv/
 __pycache__/
-backend/
 lib/
 test/
 *.mp4
