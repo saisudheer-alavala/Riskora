@@ -1,0 +1,16 @@
+build/
+android/
+ios/
+windows/
+linux/
+macos/
+.dart_tool/
+.git/
+venv/
+__pycache__/
+backend/
+lib/
+test/
+*.mp4
+*.db
+*.sqlite3
