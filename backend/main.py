@@ -640,6 +640,24 @@ def handle_chat_message(req: ChatMessageRequest):
         "text": default_text
     }
 
+# ==========================================
+# --- SERVE FLUTTER WEB APP (IF BUILT) ---
+# ==========================================
+try:
+    from fastapi.staticfiles import StaticFiles
+    possible_web_dirs = [
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), "build", "web"),
+        os.path.join(os.path.dirname(__file__), "web_build"),
+        os.path.join(os.getcwd(), "build", "web"),
+    ]
+    for web_dir in possible_web_dirs:
+        if os.path.exists(web_dir) and os.path.exists(os.path.join(web_dir, "index.html")):
+            print(f">> Mounting RISKORA Flutter Web bundle from: {web_dir}")
+            app.mount("/", StaticFiles(directory=web_dir, html=True), name="flutter_web")
+            break
+except Exception as e:
+    print(f"Notice: Flutter web static mounting skipped: {e}")
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
