@@ -12,57 +12,61 @@ class ChatService {
 
   final ApiService _apiService = ApiService();
 
-  static const String _groqApiKey =
+  static const String _defaultGroqApiKey =
       String.fromEnvironment('GROQ_API_KEY', defaultValue: '');
   static String customApiKey = '';
   static String get effectiveApiKey =>
-      customApiKey.isNotEmpty ? customApiKey : _groqApiKey;
+      customApiKey.isNotEmpty ? customApiKey : _defaultGroqApiKey;
   static const String _groqModel = 'openai/gpt-oss-120b';
+  static const String _fallbackGroqModel = 'openai/gpt-oss-20b';
+
+  static void setCustomApiKey(String key) {
+    customApiKey = key.trim();
+  }
 
   Future<ChatMessage> sendMessage({
     required String userPrompt,
     required ChatMode mode,
     List<ChatMessage> conversationHistory = const [],
   }) async {
-    // 1. If connected to FastAPI backend, try backend first
-    if (!_apiService.useDemoMode &&
-        _apiService.connectionStatus == ApiConnectionStatus.connected) {
-      try {
-        final response = await http
-            .post(
-              Uri.parse('${_apiService.baseUrl}/api/chat'),
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode({
-                'prompt': userPrompt,
-                'mode': mode.name,
-                'history': conversationHistory
-                    .map((m) => {'sender': m.sender.name, 'text': m.text})
-                    .toList(),
-              }),
-            )
-            .timeout(const Duration(seconds: 12));
-
-        if (response.statusCode == 200) {
-          final data = jsonDecode(utf8.decode(response.bodyBytes));
-          return ChatMessage.fromJson(data);
-        }
-      } catch (e) {
-        debugPrint('Backend chat error, trying direct Groq AI: $e');
-      }
-    }
-
-    // 2. Call Groq AI Assistant directly using Groq API Key
+    // 1. Always attempt FastAPI backend chat endpoint first
     try {
-      final groqResponse = await _sendGroqMessage(
-        userPrompt: userPrompt,
-        mode: mode,
-        conversationHistory: conversationHistory,
-      );
-      if (groqResponse != null) {
-        return groqResponse;
+      final response = await http
+          .post(
+            Uri.parse('${_apiService.baseUrl}/api/chat'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'prompt': userPrompt,
+              'mode': mode.name,
+              'history': conversationHistory
+                  .map((m) => {'sender': m.sender.name, 'text': m.text})
+                  .toList(),
+            }),
+          )
+          .timeout(const Duration(seconds: 12));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        return ChatMessage.fromJson(data);
       }
     } catch (e) {
-      debugPrint('Groq AI error: $e');
+      debugPrint('Backend chat error, trying direct Groq AI: $e');
+    }
+
+    // 2. Call Groq AI Assistant directly using Groq API Key if configured
+    if (effectiveApiKey.isNotEmpty) {
+      try {
+        final groqResponse = await _sendGroqMessage(
+          userPrompt: userPrompt,
+          mode: mode,
+          conversationHistory: conversationHistory,
+        );
+        if (groqResponse != null) {
+          return groqResponse;
+        }
+      } catch (e) {
+        debugPrint('Groq AI direct error: $e');
+      }
     }
 
     // 3. Fallback to local heuristic intelligence if offline or network error
@@ -95,40 +99,47 @@ class ChatService {
 
     messages.add({'role': 'user', 'content': userPrompt});
 
-    final response = await http
-        .post(
-          Uri.parse('https://api.groq.com/openai/v1/chat/completions'),
-          headers: {
-            'Authorization': 'Bearer $_groqApiKey',
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({
-            'model': _groqModel,
-            'messages': messages,
-            'temperature': 0.6,
-            'max_tokens': 1024,
-          }),
-        )
-        .timeout(const Duration(seconds: 15));
+    for (final model in [_groqModel, _fallbackGroqModel]) {
+      try {
+        final response = await http
+            .post(
+              Uri.parse('https://api.groq.com/openai/v1/chat/completions'),
+              headers: {
+                'Authorization': 'Bearer $effectiveApiKey',
+                'Content-Type': 'application/json',
+                'User-Agent': 'RISKORA-SecOps/1.0',
+              },
+              body: jsonEncode({
+                'model': model,
+                'messages': messages,
+                'temperature': 0.6,
+                'max_tokens': 1024,
+              }),
+            )
+            .timeout(const Duration(seconds: 15));
 
-    if (response.statusCode == 200) {
-      final json = jsonDecode(utf8.decode(response.bodyBytes));
-      final choices = json['choices'] as List?;
-      if (choices != null && choices.isNotEmpty) {
-        final content = choices[0]['message']?['content'] as String?;
-        if (content != null && content.trim().isNotEmpty) {
-          final now = DateTime.now();
-          return ChatMessage(
-            id: 'groq-${now.millisecondsSinceEpoch}',
-            sender: MessageSender.assistant,
-            mode: mode,
-            timestamp: now,
-            text: content.trim(),
-          );
+        if (response.statusCode == 200) {
+          final json = jsonDecode(utf8.decode(response.bodyBytes));
+          final choices = json['choices'] as List?;
+          if (choices != null && choices.isNotEmpty) {
+            final content = choices[0]['message']?['content'] as String?;
+            if (content != null && content.trim().isNotEmpty) {
+              final now = DateTime.now();
+              return ChatMessage(
+                id: 'groq-${now.millisecondsSinceEpoch}',
+                sender: MessageSender.assistant,
+                mode: mode,
+                timestamp: now,
+                text: content.trim(),
+              );
+            }
+          }
+        } else {
+          debugPrint('Groq API error on $model: ${response.statusCode} -> ${response.body}');
         }
+      } catch (e) {
+        debugPrint('Groq direct API exception on $model: $e');
       }
-    } else {
-      debugPrint('Groq API error: ${response.statusCode} -> ${response.body}');
     }
     return null;
   }

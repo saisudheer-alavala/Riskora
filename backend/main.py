@@ -8,6 +8,15 @@ from fastapi import FastAPI, HTTPException, Header, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+try:
+    from dotenv import load_dotenv
+    # Load backend/.env and root .env if present
+    load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+    load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"))
+    load_dotenv()
+except ImportError:
+    pass
+
 from database import (
     init_db,
     get_db_connection,
@@ -360,6 +369,7 @@ def add_investigation_note(threat_id: str, body: AddNoteRequest):
 # --- SCAN HISTORY & RUNNER (PERSISTENT) ---
 # ==========================================
 @app.get("/api/scans", response_model=List[ScanRecordModel])
+@app.get("/api/scans/history", response_model=List[ScanRecordModel])
 def get_scan_history(user_id: str = Depends(get_current_user_id)):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -439,6 +449,7 @@ def run_scan(req: TriggerScanRequest, user_id: str = Depends(get_current_user_id
 # --- REPORTS ---
 # ==========================================
 @app.get("/api/reports", response_model=ReportSummaryModel)
+@app.get("/api/reports/summary", response_model=ReportSummaryModel)
 def get_reports(range: str = "Last 30 Days", user_id: str = Depends(get_current_user_id)):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -477,22 +488,52 @@ def get_reports(range: str = "Last 30 Days", user_id: str = Depends(get_current_
 # ==========================================
 # --- AI COPILOT CHAT (GROQ POWERED) ---
 # ==========================================
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-if not GROQ_API_KEY and os.path.exists(os.path.join(os.path.dirname(__file__), ".env")):
-    try:
-        with open(os.path.join(os.path.dirname(__file__), ".env"), "r") as env_f:
-            for env_line in env_f:
-                if env_line.strip().startswith("GROQ_API_KEY="):
-                    GROQ_API_KEY = env_line.strip().split("=", 1)[1].strip().strip("'\"")
-    except Exception:
-        pass
+def get_groq_api_key() -> str:
+    key = os.environ.get("GROQ_API_KEY", "").strip()
+    if key:
+        return key
 
-GROQ_MODEL = "openai/gpt-oss-120b"
+    possible_paths = [
+        os.path.join(os.path.dirname(__file__), ".env"),
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"),
+        os.path.join(os.getcwd(), ".env"),
+        ".env",
+    ]
+    for env_path in possible_paths:
+        if os.path.exists(env_path):
+            try:
+                with open(env_path, "r", encoding="utf-8") as env_f:
+                    for line in env_f:
+                        line = line.strip()
+                        if line.startswith("GROQ_API_KEY="):
+                            val = line.split("=", 1)[1].strip().strip("'\"")
+                            if val:
+                                return val
+            except Exception:
+                pass
+    return ""
+
+GROQ_MODELS = ["openai/gpt-oss-120b", "openai/gpt-oss-20b"]
 
 class ChatMessageRequest(BaseModel):
     prompt: str
     mode: str = "brandAssistant"
     history: List[dict] = []
+
+@app.get("/api/ai/status")
+def get_ai_status():
+    key = get_groq_api_key()
+    return {
+        "status": "online" if key else "unconfigured",
+        "provider": "GroqCloud",
+        "models": GROQ_MODELS,
+        "supported_modes": [
+            "brandAssistant",
+            "riskAdvisor",
+            "customerSupport"
+        ],
+        "has_api_key": bool(key and len(key) > 10)
+    }
 
 @app.post("/api/chat")
 def handle_chat_message(req: ChatMessageRequest):
@@ -500,58 +541,103 @@ def handle_chat_message(req: ChatMessageRequest):
     msg_id = f"ai-{int(datetime.now().timestamp() * 1000)}"
 
     system_prompts = {
-        "brandAssistant": "You are RISKORA Brand Intelligence Assistant, an elite AI assistant for enterprise brand protection and digital perimeter defense. You assist security analysts in monitoring trademarks, official social handles, rogue domains, and brand impersonators. Format answers clearly using Markdown with actionable steps.",
-        "riskAdvisor": "You are RISKORA Threat Intelligence & Risk Advisor. You analyze cyber threat telemetry, compute threat severity ratings, evaluate phishing vectors and logo squatted assets, and recommend immediate risk mitigation protocols. Format responses in Markdown.",
-        "support": "You are RISKORA SecOps Support Assistant. You provide clear, step-by-step guidance on operating the RISKORA SecOps platform, executing crawler scans, generating compliance takedown notices, and configuring API telemetry. Format responses in Markdown."
+        "brandAssistant": (
+            "You are RISKORA Brand Intelligence Assistant, an elite AI assistant for enterprise "
+            "brand protection and digital perimeter defense. You assist security analysts in monitoring "
+            "trademarks, official social handles, rogue domains, and brand impersonators. "
+            "Format answers clearly using Markdown with actionable steps."
+        ),
+        "riskAdvisor": (
+            "You are RISKORA Threat Intelligence & Risk Advisor. You analyze cyber threat telemetry, "
+            "compute threat severity ratings (0-100), evaluate phishing vectors and logo squatted assets, "
+            "and recommend immediate risk mitigation protocols. Format responses in Markdown."
+        ),
+        "customerSupport": (
+            "You are RISKORA SecOps Support Assistant. You provide clear, step-by-step guidance on operating "
+            "the RISKORA SecOps platform, executing crawler scans, generating compliance takedown notices, "
+            "and configuring API telemetry. Format responses in Markdown."
+        ),
+        "support": (
+            "You are RISKORA SecOps Support Assistant. You provide clear, step-by-step guidance on operating "
+            "the RISKORA SecOps platform, executing crawler scans, generating compliance takedown notices, "
+            "and configuring API telemetry. Format responses in Markdown."
+        )
     }
     system_prompt = system_prompts.get(req.mode, system_prompts["brandAssistant"])
 
     messages = [{"role": "system", "content": system_prompt}]
     for m in req.history[-6:]:
-        messages.append({
-            "role": "user" if m.get("sender") == "user" else "assistant",
-            "content": m.get("text", "")
-        })
+        sender = m.get("sender", "")
+        role = "user" if sender == "user" else "assistant"
+        content = m.get("text", "")
+        if content:
+            messages.append({"role": role, "content": content})
     messages.append({"role": "user", "content": req.prompt})
 
-    try:
-        req_data = json.dumps({
-            "model": GROQ_MODEL,
-            "messages": messages,
-            "temperature": 0.6,
-            "max_tokens": 1024
-        }).encode("utf-8")
+    api_key = get_groq_api_key()
+    if api_key:
+        for model in GROQ_MODELS:
+            try:
+                req_data = json.dumps({
+                    "model": model,
+                    "messages": messages,
+                    "temperature": 0.6,
+                    "max_tokens": 1024
+                }).encode("utf-8")
 
-        groq_req = urllib.request.Request(
-            "https://api.groq.com/openai/v1/chat/completions",
-            data=req_data,
-            headers={
-                "Authorization": f"Bearer {GROQ_API_KEY}",
-                "Content-Type": "application/json",
-                "User-Agent": "RISKORA-SecOps/1.0"
-            }
+                groq_req = urllib.request.Request(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    data=req_data,
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                        "User-Agent": "RISKORA-SecOps/1.0"
+                    }
+                )
+                with urllib.request.urlopen(groq_req, timeout=15) as res:
+                    res_data = json.loads(res.read().decode("utf-8"))
+                    choices = res_data.get("choices", [])
+                    if choices:
+                        ai_text = choices[0].get("message", {}).get("content", "").strip()
+                        if ai_text:
+                            return {
+                                "id": msg_id,
+                                "sender": "assistant",
+                                "mode": req.mode,
+                                "timestamp": now_iso,
+                                "text": ai_text
+                            }
+            except Exception as e:
+                print(f"Groq API error on model {model}: {e}")
+
+    # Fallback response if network or API key is unavailable
+    default_text = {
+        "brandAssistant": (
+            f"**RISKORA Brand Intelligence Assistant**\n\n"
+            f"Regarding your inquiry: *\"{req.prompt}\"*\n\n"
+            f"RISKORA is actively monitoring your brand assets across connected social networks, "
+            f"app repositories, and DNS registries. All baseline assets are currently secure."
+        ),
+        "riskAdvisor": (
+            f"**RISKORA Threat Intelligence & Risk Advisor**\n\n"
+            f"Regarding your query: *\"{req.prompt}\"*\n\n"
+            f"Autonomous threat assessment models evaluate candidates using visual logo matching, "
+            f"phonetic similarity, and behavioral indicators to detect impersonation vectors."
+        ),
+        "customerSupport": (
+            f"**RISKORA SecOps Support Assistant**\n\n"
+            f"Regarding your inquiry: *\"{req.prompt}\"*\n\n"
+            f"You can trigger ad-hoc scans from the Dashboard, review flagged assets in Social Media "
+            f"or App Store monitoring, and file automated DMCA takedown requests."
         )
-        with urllib.request.urlopen(groq_req, timeout=15) as res:
-            res_data = json.loads(res.read().decode())
-            choices = res_data.get("choices", [])
-            if choices:
-                ai_text = choices[0].get("message", {}).get("content", "").strip()
-                return {
-                    "id": msg_id,
-                    "sender": "assistant",
-                    "mode": req.mode,
-                    "timestamp": now_iso,
-                    "text": ai_text
-                }
-    except Exception as e:
-        print(f"Groq API error in backend: {e}")
+    }.get(req.mode, f"**RISKORA SecOps Assistant**\n\nRegarding: *\"{req.prompt}\"*.")
 
     return {
         "id": msg_id,
         "sender": "assistant",
         "mode": req.mode,
         "timestamp": now_iso,
-        "text": f"**RISKORA Threat Intelligence Assistant**\n\nRegarding: *\"{req.prompt}\"*.\n\nRISKORA AI telemetry is operating normally across all official domains, brand assets, and mobile ecosystems."
+        "text": default_text
     }
 
 if __name__ == "__main__":

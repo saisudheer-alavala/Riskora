@@ -1344,7 +1344,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'Default SecOps demo verification code is pre-filled: 202688',
+                      'SecOps 2FA Verification Code (Pre-authenticated: 202688)',
                       style: GoogleFonts.inter(fontSize: 11, color: AppTheme.primaryTeal),
                     ),
                   ),

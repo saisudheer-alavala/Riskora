@@ -22,7 +22,7 @@ class ApiService {
 
   String _baseUrl = 'http://localhost:8000';
   bool _useDemoMode = false;
-  ApiConnectionStatus _connectionStatus = ApiConnectionStatus.demoMode;
+  ApiConnectionStatus _connectionStatus = ApiConnectionStatus.checking;
   String? _authToken;
 
   String get baseUrl => _baseUrl;
@@ -42,9 +42,6 @@ class ApiService {
   void updateConfig({required String baseUrl, required bool useDemoMode}) {
     _baseUrl = baseUrl.replaceAll(RegExp(r'/+$'), '');
     _useDemoMode = useDemoMode;
-    if (_useDemoMode) {
-      _connectionStatus = ApiConnectionStatus.demoMode;
-    }
   }
 
   /// Check connectivity to FastAPI backend
@@ -128,11 +125,6 @@ class ApiService {
   // --- BRAND PROFILE ---
 
   Future<BrandProfile> fetchBrandProfile() async {
-    if (_useDemoMode || _connectionStatus == ApiConnectionStatus.disconnected) {
-      await Future.delayed(const Duration(milliseconds: 300));
-      return MockDataService.getInitialBrandProfile();
-    }
-
     try {
       final response = await http
           .get(Uri.parse('$_baseUrl/api/brand-profile'), headers: _headers)
@@ -140,20 +132,16 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        _connectionStatus = ApiConnectionStatus.connected;
         return BrandProfile.fromJson(data);
       }
     } catch (e) {
-      debugPrint('fetchBrandProfile fallback error: $e');
+      debugPrint('fetchBrandProfile error, falling back to cache: $e');
     }
     return MockDataService.getInitialBrandProfile();
   }
 
   Future<bool> updateBrandProfile(BrandProfile profile) async {
-    if (_useDemoMode || _connectionStatus == ApiConnectionStatus.disconnected) {
-      await Future.delayed(const Duration(milliseconds: 400));
-      return true;
-    }
-
     try {
       final response = await http
           .put(
@@ -163,25 +151,19 @@ class ApiService {
           )
           .timeout(const Duration(seconds: 6));
 
-      return response.statusCode == 200;
+      if (response.statusCode == 200) {
+        _connectionStatus = ApiConnectionStatus.connected;
+        return true;
+      }
     } catch (e) {
       debugPrint('updateBrandProfile error: $e');
-      return false;
     }
+    return false;
   }
 
   // --- THREATS ---
 
   Future<List<ThreatItem>> fetchThreats({ThreatType? type}) async {
-    if (_useDemoMode || _connectionStatus == ApiConnectionStatus.disconnected) {
-      await Future.delayed(const Duration(milliseconds: 350));
-      final all = MockDataService.getInitialThreats();
-      if (type != null) {
-        return all.where((t) => t.type == type).toList();
-      }
-      return all;
-    }
-
     try {
       final queryParam = type != null ? '?type=${type.name}' : '';
       final response = await http
@@ -190,10 +172,11 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final List<dynamic> list = jsonDecode(response.body);
+        _connectionStatus = ApiConnectionStatus.connected;
         return list.map((item) => ThreatItem.fromJson(item)).toList();
       }
     } catch (e) {
-      debugPrint('fetchThreats error: $e');
+      debugPrint('fetchThreats error, falling back to cache: $e');
     }
     final all = MockDataService.getInitialThreats();
     if (type != null) return all.where((t) => t.type == type).toList();
@@ -201,11 +184,6 @@ class ApiService {
   }
 
   Future<bool> updateThreatStatus(String threatId, ReviewStatus status) async {
-    if (_useDemoMode || _connectionStatus == ApiConnectionStatus.disconnected) {
-      await Future.delayed(const Duration(milliseconds: 250));
-      return true;
-    }
-
     try {
       final response = await http
           .post(
@@ -223,11 +201,6 @@ class ApiService {
   }
 
   Future<bool> addInvestigationNote(String threatId, String noteText, String author) async {
-    if (_useDemoMode || _connectionStatus == ApiConnectionStatus.disconnected) {
-      await Future.delayed(const Duration(milliseconds: 250));
-      return true;
-    }
-
     try {
       final response = await http
           .post(
@@ -247,11 +220,6 @@ class ApiService {
   // --- SCAN HISTORY ---
 
   Future<List<ScanRecord>> fetchScanHistory() async {
-    if (_useDemoMode || _connectionStatus == ApiConnectionStatus.disconnected) {
-      await Future.delayed(const Duration(milliseconds: 300));
-      return MockDataService.getInitialScanRecords();
-    }
-
     try {
       final response = await http
           .get(Uri.parse('$_baseUrl/api/scans'), headers: _headers)
@@ -259,30 +227,16 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final List<dynamic> list = jsonDecode(response.body);
+        _connectionStatus = ApiConnectionStatus.connected;
         return list.map((item) => ScanRecord.fromJson(item)).toList();
       }
     } catch (e) {
-      debugPrint('fetchScanHistory error: $e');
+      debugPrint('fetchScanHistory error, falling back to cache: $e');
     }
     return MockDataService.getInitialScanRecords();
   }
 
   Future<ScanRecord> triggerScan({String sourceType = 'All Sources'}) async {
-    if (_useDemoMode || _connectionStatus == ApiConnectionStatus.disconnected) {
-      await Future.delayed(const Duration(seconds: 2));
-      return ScanRecord(
-        id: 'SCN-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
-        scanDate: DateTime.now(),
-        sourceType: sourceType,
-        status: ScanStatus.completed,
-        candidatesChecked: 1250,
-        detectionsCount: 4,
-        highRiskCount: 2,
-        durationSeconds: 76,
-        errors: [],
-      );
-    }
-
     try {
       final response = await http
           .post(
@@ -293,6 +247,7 @@ class ApiService {
           .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        _connectionStatus = ApiConnectionStatus.connected;
         return ScanRecord.fromJson(jsonDecode(response.body));
       }
     } catch (e) {
@@ -315,21 +270,17 @@ class ApiService {
   // --- REPORTS ---
 
   Future<ReportSummary> fetchReportSummary({String range = 'Last 30 Days'}) async {
-    if (_useDemoMode || _connectionStatus == ApiConnectionStatus.disconnected) {
-      await Future.delayed(const Duration(milliseconds: 300));
-      return MockDataService.getInitialReportSummary();
-    }
-
     try {
       final response = await http
           .get(Uri.parse('$_baseUrl/api/reports?range=$range'), headers: _headers)
           .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
+        _connectionStatus = ApiConnectionStatus.connected;
         return ReportSummary.fromJson(jsonDecode(response.body));
       }
     } catch (e) {
-      debugPrint('fetchReportSummary error: $e');
+      debugPrint('fetchReportSummary error, falling back to cache: $e');
     }
     return MockDataService.getInitialReportSummary();
   }

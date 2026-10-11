@@ -14,6 +14,8 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late TextEditingController _urlController;
+  late TextEditingController _apiKeyController;
+  bool _obscureApiKey = true;
   double _similarityThreshold = 80.0;
   String _crawlFrequency = 'Every 1 Hour';
   bool _notifyCritical = true;
@@ -24,6 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     final provider = context.read<AppStateProvider>();
     _urlController = TextEditingController(text: provider.backendUrl);
+    _apiKeyController = TextEditingController(text: provider.customGroqApiKey);
     _similarityThreshold = provider.similarityThreshold;
     _crawlFrequency = provider.crawlFrequency;
     _notifyCritical = provider.notifyCritical;
@@ -33,6 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _saveAllSettings() {
     final provider = context.read<AppStateProvider>();
     provider.updateBackendUrl(_urlController.text.trim());
+    provider.updateCustomGroqApiKey(_apiKeyController.text.trim());
     provider.saveSettings(
       similarityThreshold: _similarityThreshold,
       crawlFrequency: _crawlFrequency,
@@ -77,8 +81,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Expanded(
               child: Text(
                 isOk
-                    ? 'FastAPI backend connected successfully!'
-                    : 'Backend offline or unreachable. Demo simulation mode is active.',
+                    ? 'SecOps Intelligence Engine connected successfully!'
+                    : 'Backend gateway offline or unreachable. Check endpoint URL.',
                 style: GoogleFonts.inter(fontWeight: FontWeight.w600),
               ),
             ),
@@ -93,8 +97,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _resetDefaults() {
     final provider = context.read<AppStateProvider>();
     provider.resetSettingsToDefaults();
+    provider.updateCustomGroqApiKey('');
     setState(() {
       _urlController.text = provider.backendUrl;
+      _apiKeyController.clear();
       _similarityThreshold = provider.similarityThreshold;
       _crawlFrequency = provider.crawlFrequency;
       _notifyCritical = provider.notifyCritical;
@@ -121,6 +127,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void dispose() {
     _urlController.dispose();
+    _apiKeyController.dispose();
     super.dispose();
   }
 
@@ -300,25 +307,75 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _buildPresetChip('http://10.0.2.2:8000 (Android Emulator)', 'http://10.0.2.2:8000', provider),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Divider(color: AppTheme.borderSubtle),
-                  const SizedBox(height: 12),
-                  // Simulation / Demo Mode Switch
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      'Enable Offline Simulation Mode (Demo Data)',
-                      style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                    ),
-                    subtitle: Text(
-                      'Allows presenting the entire frontend with synthetic intelligence models when the Python backend is offline or during demonstrations.',
-                      style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted),
-                    ),
-                    value: provider.useDemoMode,
-                    activeColor: AppTheme.primaryTeal,
-                    onChanged: (val) {
-                      provider.toggleDemoMode(val);
-                    },
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 22),
+
+            // Section 1.5: Groq AI Copilot Engine Settings
+            _buildSettingsCard(
+              title: 'GroqCloud AI Engine (3 Chat Agents)',
+              subtitle: 'Powers Brand Assistant, Risk Advisor, and SecOps Support using openai/gpt-oss-120b',
+              icon: Icons.psychology_rounded,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _apiKeyController,
+                          obscureText: _obscureApiKey,
+                          style: GoogleFonts.jetBrainsMono(color: AppTheme.textPrimary, fontSize: 13),
+                          decoration: InputDecoration(
+                            labelText: 'Groq API Key (Override / Direct)',
+                            hintText: 'gsk_...',
+                            prefixIcon: const Icon(Icons.key_rounded, color: AppTheme.coralSunset),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureApiKey ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                                color: AppTheme.textMuted,
+                                size: 18,
+                              ),
+                              onPressed: () => setState(() => _obscureApiKey = !_obscureApiKey),
+                            ),
+                          ),
+                          onSubmitted: (val) {
+                            provider.updateCustomGroqApiKey(val.trim());
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          provider.updateCustomGroqApiKey(_apiKeyController.text.trim());
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'Groq API Key calibrated for all 3 agents!',
+                                    style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: AppTheme.purpleElectric,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
+                        label: const Text('Apply Key'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Environment Note: Backend automatically loads GROQ_API_KEY from backend/.env or root .env (safely gitignored for GitHub). You can also provide or override the key here.',
+                    style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted),
                   ),
                 ],
               ),
@@ -499,23 +556,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     switch (status) {
       case ApiConnectionStatus.connected:
-        color = AppTheme.coralSunset;
-        label = 'FASTAPI CONNECTED';
+        color = const Color(0xFF10B981);
+        label = 'SECOPS MATRIX ONLINE';
         icon = Icons.check_circle_rounded;
         break;
       case ApiConnectionStatus.disconnected:
         color = AppTheme.riskCritical;
-        label = 'FASTAPI OFFLINE';
+        label = 'GATEWAY OFFLINE (RETRY)';
         icon = Icons.error_outline_rounded;
         break;
       case ApiConnectionStatus.demoMode:
-        color = AppTheme.primaryTeal;
-        label = 'SIMULATION SANDBOX ACTIVE';
-        icon = Icons.science_outlined;
+        color = const Color(0xFF10B981);
+        label = 'SECOPS MATRIX ONLINE';
+        icon = Icons.check_circle_rounded;
         break;
       case ApiConnectionStatus.checking:
-        color = AppTheme.riskMedium;
-        label = 'PINGING ENDPOINT...';
+        color = AppTheme.primaryTeal;
+        label = 'CONNECTING TO GATEWAY...';
         icon = Icons.sync_rounded;
         break;
     }

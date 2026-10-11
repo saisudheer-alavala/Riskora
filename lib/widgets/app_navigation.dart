@@ -419,37 +419,58 @@ class AppNavigationShell extends StatelessWidget {
             ),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: provider.useDemoMode
-                            ? AppTheme.primaryTeal
-                            : (provider.connectionStatus == ApiConnectionStatus.connected
-                                ? AppTheme.coralSunset
-                                : AppTheme.riskCritical),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        provider.useDemoMode
-                            ? 'Simulation Sandbox'
-                            : (provider.connectionStatus == ApiConnectionStatus.connected
-                                ? 'FastAPI Connected'
-                                : 'FastAPI Offline'),
-                        style: GoogleFonts.jetBrainsMono(
-                          fontSize: 11,
-                          color: AppTheme.textSecondary,
+                InkWell(
+                  onTap: provider.connectionStatus != ApiConnectionStatus.connected
+                      ? () => provider.testBackendConnection()
+                      : null,
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: provider.connectionStatus == ApiConnectionStatus.connected
+                                ? const Color(0xFF10B981)
+                                : (provider.connectionStatus == ApiConnectionStatus.checking
+                                    ? AppTheme.primaryTeal
+                                    : const Color(0xFFF59E0B)),
+                            shape: BoxShape.circle,
+                            boxShadow: provider.connectionStatus == ApiConnectionStatus.connected
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(0xFF10B981).withOpacity(0.5),
+                                      blurRadius: 6,
+                                      spreadRadius: 1,
+                                    )
+                                  ]
+                                : null,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            provider.connectionStatus == ApiConnectionStatus.connected
+                                ? 'SecOps Matrix Online'
+                                : (provider.connectionStatus == ApiConnectionStatus.checking
+                                    ? 'Connecting SecOps...'
+                                    : 'SecOps Offline (Tap Retry)'),
+                            style: GoogleFonts.jetBrainsMono(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: provider.connectionStatus == ApiConnectionStatus.connected
+                                  ? const Color(0xFF10B981)
+                                  : AppTheme.textSecondary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
                 const SizedBox(height: 10),
                 AnimatedGradientButton(

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/brand_profile.dart';
 import '../models/threat_item.dart';
@@ -9,6 +10,13 @@ import '../services/api_service.dart';
 import '../services/chat_service.dart';
 import '../services/mock_data_service.dart';
 import '../theme/app_theme.dart';
+
+String getDefaultBackendUrl() {
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    return 'http://10.0.2.2:8000';
+  }
+  return 'http://localhost:8000';
+}
 
 class AppStateProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -36,9 +44,9 @@ class AppStateProvider extends ChangeNotifier {
   String _scanProgressMessage = '';
 
   // Settings
-  String _backendUrl = 'http://localhost:8000';
-  bool _useDemoMode = true;
-  ApiConnectionStatus _connectionStatus = ApiConnectionStatus.demoMode;
+  late String _backendUrl = getDefaultBackendUrl();
+  bool _useDemoMode = false;
+  ApiConnectionStatus _connectionStatus = ApiConnectionStatus.checking;
   ThemeMode _themeMode = ThemeMode.dark;
   double _similarityThreshold = 80.0;
   String _crawlFrequency = 'Every 1 Hour';
@@ -150,6 +158,9 @@ class AppStateProvider extends ChangeNotifier {
   AppStateProvider({bool initialAuthenticated = false, bool initialShowAuth = false}) {
     _isAuthenticated = initialAuthenticated;
     _showAuthScreen = initialShowAuth;
+    _backendUrl = getDefaultBackendUrl();
+    _useDemoMode = false;
+    _apiService.updateConfig(baseUrl: _backendUrl, useDemoMode: false);
     _brandProfile = MockDataService.getInitialBrandProfile();
     _threats = MockDataService.getInitialThreats();
     _scanRecords = MockDataService.getInitialScanRecords();
@@ -158,7 +169,7 @@ class AppStateProvider extends ChangeNotifier {
     if (_threats.isNotEmpty) {
       _selectedThreat = _threats.first;
     }
-    // Proactively check FastAPI backend connection
+    // Proactively connect to FastAPI SecOps backend and sync live telemetry
     testBackendConnection();
   }
 
@@ -494,11 +505,12 @@ class AppStateProvider extends ChangeNotifier {
     _crawlFrequency = 'Every 1 Hour';
     _notifyCritical = true;
     _notifyHigh = true;
-    _backendUrl = 'http://localhost:8000';
-    _useDemoMode = true;
-    _apiService.updateConfig(baseUrl: _backendUrl, useDemoMode: _useDemoMode);
-    _connectionStatus = ApiConnectionStatus.demoMode;
+    _backendUrl = getDefaultBackendUrl();
+    _useDemoMode = false;
+    _apiService.updateConfig(baseUrl: _backendUrl, useDemoMode: false);
+    _connectionStatus = ApiConnectionStatus.checking;
     notifyListeners();
+    testBackendConnection();
   }
 
   void setNavIndex(int index) {
@@ -631,6 +643,12 @@ class AppStateProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  String get customGroqApiKey => ChatService.customApiKey;
+  void updateCustomGroqApiKey(String key) {
+    ChatService.setCustomApiKey(key);
+    notifyListeners();
+  }
+
   // --- SETTINGS ACTIONS ---
   void updateBackendUrl(String url) {
     _backendUrl = url;
@@ -640,9 +658,9 @@ class AppStateProvider extends ChangeNotifier {
 
   void toggleDemoMode(bool value) {
     _useDemoMode = value;
-    _apiService.updateConfig(baseUrl: _backendUrl, useDemoMode: _useDemoMode);
-    _connectionStatus = value ? ApiConnectionStatus.demoMode : ApiConnectionStatus.disconnected;
+    _apiService.updateConfig(baseUrl: _backendUrl, useDemoMode: value);
     notifyListeners();
+    testBackendConnection();
   }
 
   Future<void> testBackendConnection() async {
@@ -652,6 +670,10 @@ class AppStateProvider extends ChangeNotifier {
     final isOk = await _apiService.checkHealth();
     _connectionStatus = isOk ? ApiConnectionStatus.connected : ApiConnectionStatus.disconnected;
     notifyListeners();
+
+    if (isOk) {
+      await refreshAllData();
+    }
   }
 
   Future<void> refreshAllData() async {

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state_provider.dart';
+import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/threat_card.dart';
-import '../widgets/demo_banner.dart';
 import '../widgets/floating_ai_button.dart';
 import '../widgets/charts/risk_distribution_chart.dart';
 import '../widgets/charts/threat_timeline_chart.dart';
@@ -111,11 +111,34 @@ class DashboardScreen extends StatelessWidget {
             // Red Points Inspired Animated Cyber Threat Ticker Banner
             const CyberTickerBanner(),
 
-            // Demo Mode Notice Banner
-            DemoBanner(
-              status: provider.connectionStatus,
-              onSettingsTap: () => provider.setNavIndex(8),
-            ),
+            if (provider.connectionStatus == ApiConnectionStatus.disconnected)
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppTheme.coralDark.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppTheme.riskCritical.withOpacity(0.4)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.wifi_off_rounded, color: AppTheme.riskCritical, size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'SecOps Gateway is offline. Reconnecting to ${provider.backendUrl}...',
+                        style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textPrimary),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => provider.testBackendConnection(),
+                      child: const Text('Retry Now', style: TextStyle(color: AppTheme.primaryTeal, fontSize: 12, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              )
+            else
+              const SizedBox(height: 12),
 
             // 4 Required Telemetry Stat Cards
             LayoutBuilder(
